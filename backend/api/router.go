@@ -6,6 +6,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/auth"
 	"github.com/matthewmcgibbon/spaces/backend/internal/cards"
 	"github.com/matthewmcgibbon/spaces/backend/internal/goals"
+	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/middleware"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
@@ -18,6 +19,7 @@ type Config struct {
 	SpaceHandler   *spaces.Handler
 	CardHandler    *cards.Handler
 	GoalHandler    *goals.Handler
+	MetricsHandler *metrics.Handler
 }
 
 func NewRouter(cfg Config) http.Handler {
@@ -34,6 +36,7 @@ func NewRouter(cfg Config) http.Handler {
 	spaces.RegisterRoutes(mux, cfg.SpaceHandler, authMW, tenantMW)
 	cards.RegisterRoutes(mux, cfg.CardHandler, authMW, tenantMW)
 	goals.RegisterRoutes(mux, cfg.GoalHandler, authMW, tenantMW)
+	metrics.RegisterRoutes(mux, cfg.MetricsHandler, authMW, tenantMW)
 
 	var handler http.Handler = mux
 	handler = middleware.Logging(handler)

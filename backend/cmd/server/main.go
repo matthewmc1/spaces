@@ -14,6 +14,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/auth"
 	"github.com/matthewmcgibbon/spaces/backend/internal/cards"
 	"github.com/matthewmcgibbon/spaces/backend/internal/goals"
+	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/config"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/database"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
@@ -57,10 +58,12 @@ func main() {
 	spaceSvc := spaces.NewService(spaceRepo)
 	cardSvc := cards.NewService(cardRepo)
 	goalSvc := goals.NewService(goalRepo)
+	metricsSvc := metrics.NewService(pool)
 
 	spaceHandler := spaces.NewHandler(spaceSvc)
 	cardHandler := cards.NewHandler(cardSvc)
 	goalHandler := goals.NewHandler(goalSvc)
+	metricsHandler := metrics.NewHandler(metricsSvc)
 
 	router := api.NewRouter(api.Config{
 		CORSOrigin:     cfg.CORSOrigin,
@@ -69,6 +72,7 @@ func main() {
 		SpaceHandler:   spaceHandler,
 		CardHandler:    cardHandler,
 		GoalHandler:    goalHandler,
+		MetricsHandler: metricsHandler,
 	})
 
 	srv := &http.Server{
