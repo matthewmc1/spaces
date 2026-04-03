@@ -11,7 +11,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeSpaceId }: SidebarProps) {
   return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-neutral-200/80 flex flex-col z-40">
+    <aside className="flex-shrink-0 h-screen w-64 bg-white border-r border-neutral-200/80 flex flex-col">
       {/* Logo */}
       <div className="px-5 py-4">
         <Link href="/spaces">

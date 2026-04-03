@@ -12,11 +12,12 @@ interface BoardColumnProps {
   label: string;
   cards: Card[];
   onAddCard?: () => void;
+  onCardClick?: (card: Card) => void;
 }
 
 const ADD_CARD_COLUMNS: Column[] = ["inbox"];
 
-export function BoardColumn({ column, label, cards, onAddCard }: BoardColumnProps) {
+export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column,
     data: { column },
@@ -73,7 +74,7 @@ export function BoardColumn({ column, label, cards, onAddCard }: BoardColumnProp
             </div>
           ) : (
             cards.map((card) => (
-              <BoardCard key={card.id} card={card} />
+              <BoardCard key={card.id} card={card} onClick={onCardClick} />
             ))
           )}
         </SortableContext>

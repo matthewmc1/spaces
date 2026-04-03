@@ -21,6 +21,7 @@ import { BoardHeader } from "./BoardHeader";
 import { ColumnConfigDropdown } from "./ColumnConfigDropdown";
 import { TriageDrawer } from "./TriageDrawer";
 import { CreateCardDialog } from "./CreateCardDialog";
+import { CardDetailDialog } from "./CardDetailDialog";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 interface BoardProps {
@@ -42,6 +43,7 @@ export function Board({
   const moveCard = useMoveCard(spaceId);
   const { visible, toggle, showAll } = useColumnVisibility(spaceId);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [showCreateCard, setShowCreateCard] = useState(false);
   const [triageOpen, setTriageOpen] = useState(false);
 
@@ -150,20 +152,21 @@ export function Board({
         }
       />
 
-      <div className="flex flex-1 overflow-hidden">
-        <TriageDrawer
-          open={triageOpen}
-          onClose={() => setTriageOpen(false)}
-          cardsByColumn={grouped}
-          onAddCard={() => setShowCreateCard(true)}
-        />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+      >
+        <div className="flex flex-1 overflow-hidden">
+          <TriageDrawer
+            open={triageOpen}
+            onClose={() => setTriageOpen(false)}
+            cardsByColumn={grouped}
+            onAddCard={() => setShowCreateCard(true)}
+            onCardClick={setSelectedCard}
+          />
 
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-        >
           <div className="board-surface relative flex gap-5 overflow-x-auto flex-1 pb-4">
             {visibleColumns.map(({ key, label }) => (
               <BoardColumn
@@ -174,14 +177,21 @@ export function Board({
                 onAddCard={
                   key === "inbox" ? () => setShowCreateCard(true) : undefined
                 }
+                onCardClick={setSelectedCard}
               />
             ))}
           </div>
-          <DragOverlay>
-            {activeCard ? <BoardCard card={activeCard} /> : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
+        </div>
+        <DragOverlay>
+          {activeCard ? <BoardCard card={activeCard} /> : null}
+        </DragOverlay>
+      </DndContext>
+
+      <CardDetailDialog
+        card={selectedCard}
+        onClose={() => setSelectedCard(null)}
+        onMove={(id, col, pos) => moveCard.mutate({ cardId: id, input: { column: col, position: pos } })}
+      />
 
       {showCreateCard && (
         <CreateCardDialog

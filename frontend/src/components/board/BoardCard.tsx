@@ -7,6 +7,7 @@ import type { Card } from "@/types/card";
 
 interface BoardCardProps {
   card: Card;
+  onClick?: (card: Card) => void;
 }
 
 const priorityStyles: Record<string, { label: string; className: string; border: string }> = {
@@ -16,7 +17,7 @@ const priorityStyles: Record<string, { label: string; className: string; border:
   p3: { label: "P3", className: "bg-neutral-50 text-neutral-500 border-neutral-200", border: "border-l-neutral-300" },
 };
 
-export function BoardCard({ card }: BoardCardProps) {
+export function BoardCard({ card, onClick }: BoardCardProps) {
   const {
     attributes,
     listeners,
@@ -41,14 +42,20 @@ export function BoardCard({ card }: BoardCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`card-lift bg-white border border-neutral-200/60 border-l-2 ${borderClass} rounded-[var(--radius-md)] transition-all select-none cursor-grab active:cursor-grabbing ${
+      className={`bg-white border border-neutral-200/60 border-l-2 ${borderClass} rounded-[var(--radius-md)] transition-all select-none ${
         isDragging
           ? "shadow-[var(--shadow-xl)] opacity-90 border-neutral-300"
           : "shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:border-neutral-300/80"
       }`}
+      onClick={() => onClick?.(card)}
     >
+      {/* Drag handle strip at top */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="h-1.5 cursor-grab active:cursor-grabbing bg-neutral-100/50 rounded-t-[var(--radius-md)] hover:bg-neutral-200/50 transition-colors"
+      />
+      {/* Card content - clickable */}
       <div className="p-2.5">
         <p className="text-[14px] font-medium text-neutral-800 leading-snug">
           {card.title}

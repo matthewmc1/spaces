@@ -15,9 +15,10 @@ interface TriageDrawerProps {
   onClose: () => void;
   cardsByColumn: Record<Column, Card[]>;
   onAddCard?: () => void;
+  onCardClick?: (card: Card) => void;
 }
 
-export function TriageDrawer({ open, onClose, cardsByColumn, onAddCard }: TriageDrawerProps) {
+export function TriageDrawer({ open, onClose, cardsByColumn, onAddCard, onCardClick }: TriageDrawerProps) {
   if (!open) return null;
   return (
     <div className="flex-shrink-0 w-[320px] border-r border-neutral-200 bg-white overflow-y-auto">
@@ -29,7 +30,7 @@ export function TriageDrawer({ open, onClose, cardsByColumn, onAddCard }: Triage
       </div>
       <div className="p-3 space-y-3">
         {TRIAGE_COLUMNS.map(({ key, label }) => (
-          <BoardColumn key={key} column={key} label={label} cards={cardsByColumn[key] || []} onAddCard={key === "inbox" ? onAddCard : undefined} />
+          <BoardColumn key={key} column={key} label={label} cards={cardsByColumn[key] || []} onAddCard={key === "inbox" ? onAddCard : undefined} onCardClick={onCardClick} />
         ))}
       </div>
     </div>
