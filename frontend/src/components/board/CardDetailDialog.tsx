@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Select } from "@/components/ui/Select";
 import {
   Calendar,
   ArrowRight,
@@ -18,10 +17,12 @@ import {
 } from "lucide-react";
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
+import { useGoals, useCreateGoalLink, useDeleteGoalLink } from "@/hooks/useGoals";
+import type { Goal, GoalLink } from "@/types/goal";
 
 interface CardDetailDialogProps {
   card: Card | null;
-  allCards?: Card[];
+  spaceId: string;
   onClose: () => void;
   onUpdate?: (cardId: string, updates: Partial<Card>) => void;
   onMove?: (cardId: string, column: Column, position: number) => void;
@@ -32,13 +33,6 @@ interface Subtask {
   id: string;
   text: string;
   done: boolean;
-}
-
-interface Dependency {
-  id: string;
-  cardId: string;
-  cardTitle: string;
-  type: "blocks" | "blocked_by";
 }
 
 const PRIORITY_OPTIONS = [
@@ -58,13 +52,25 @@ const EFFORT_OPTIONS = [
   { value: "8", label: "8 — Very Large" },
 ];
 
-export function CardDetailDialog({ card, allCards, onClose, onUpdate, onMove, onDelete }: CardDetailDialogProps) {
+const LINK_TYPE_OPTIONS: { value: GoalLink["link_type"]; label: string }[] = [
+  { value: "supports", label: "Supports" },
+  { value: "drives", label: "Drives" },
+  { value: "blocks", label: "Blocks" },
+];
+
+const LINK_TYPE_STYLES: Record<GoalLink["link_type"], { dot: string; bg: string; border: string; badge: string }> = {
+  supports: { dot: "bg-emerald-400", bg: "bg-emerald-50/50", border: "border-emerald-100", badge: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  drives:   { dot: "bg-primary-400", bg: "bg-primary-50/50",  border: "border-primary-100",  badge: "text-primary-700 bg-primary-50 border-primary-200" },
+  blocks:   { dot: "bg-rose-400",    bg: "bg-rose-50/50",     border: "border-rose-100",     badge: "text-rose-700 bg-rose-50 border-rose-200" },
+};
+
+export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onDelete }: CardDetailDialogProps) {
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtask, setNewSubtask] = useState("");
   const [moveDropdownOpen, setMoveDropdownOpen] = useState(false);
-  const [dependencies, setDependencies] = useState<Dependency[]>([]);
-  const [depDropdownOpen, setDepDropdownOpen] = useState(false);
-  const [depType, setDepType] = useState<"blocks" | "blocked_by">("blocked_by");
+  const [goalLinkDropdownOpen, setGoalLinkDropdownOpen] = useState(false);
+  const [goalLinkType, setGoalLinkType] = useState<GoalLink["link_type"]>("supports");
+  const [localLinks, setLocalLinks] = useState<(GoalLink & { goalTitle: string })[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Inline editable fields
@@ -75,6 +81,10 @@ export function CardDetailDialog({ card, allCards, onClose, onUpdate, onMove, on
   const [dueDate, setDueDate] = useState("");
   const [labelsText, setLabelsText] = useState("");
 
+  const { data: goals } = useGoals(spaceId);
+  const createLink = useCreateGoalLink(spaceId);
+  const deleteLink = useDeleteGoalLink(spaceId);
+
   useEffect(() => {
     if (card) {
       setTitle(card.title);
@@ -84,6 +94,7 @@ export function CardDetailDialog({ card, allCards, onClose, onUpdate, onMove, on
       setDueDate(card.due_date || "");
       setLabelsText(card.labels?.join(", ") || "");
       setConfirmDelete(false);
+      setLocalLinks([]);
     }
   }, [card]);
 
@@ -103,9 +114,10 @@ export function CardDetailDialog({ card, allCards, onClose, onUpdate, onMove, on
   if (!card) return null;
 
   const currentColumn = COLUMNS.find((c) => c.key === card.column_name);
-  const otherCards = (allCards || []).filter(
-    (c) => c.id !== card.id && !dependencies.some((d) => d.cardId === c.id)
-  );
+
+  // Goals not already linked
+  const linkedGoalIds = new Set(localLinks.map((l) => l.target_goal_id));
+  const unlinkableGoals = (goals ?? []).filter((g) => !linkedGoalIds.has(g.id));
 
   function addSubtask() {
     const text = newSubtask.trim();
@@ -122,21 +134,34 @@ export function CardDetailDialog({ card, allCards, onClose, onUpdate, onMove, on
     setSubtasks((prev) => prev.filter((s) => s.id !== id));
   }
 
-  function addDependency(targetCard: Card) {
-    setDependencies((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), cardId: targetCard.id, cardTitle: targetCard.title, type: depType },
-    ]);
-    setDepDropdownOpen(false);
+  function addGoalLink(goal: Goal) {
+    setGoalLinkDropdownOpen(false);
+    createLink.mutate(
+      {
+        goalId: goal.id,
+        input: {
+          source_type: "card",
+          source_id: card!.id,
+          link_type: goalLinkType,
+        },
+      },
+      {
+        onSuccess: (newLink: GoalLink) => {
+          setLocalLinks((prev) => [...prev, { ...newLink, goalTitle: goal.title }]);
+        },
+      }
+    );
   }
 
-  function removeDependency(id: string) {
-    setDependencies((prev) => prev.filter((d) => d.id !== id));
+  function removeGoalLink(linkId: string) {
+    deleteLink.mutate(linkId, {
+      onSuccess: () => {
+        setLocalLinks((prev) => prev.filter((l) => l.id !== linkId));
+      },
+    });
   }
 
   const doneCount = subtasks.filter((s) => s.done).length;
-  const blockers = dependencies.filter((d) => d.type === "blocked_by");
-  const blocking = dependencies.filter((d) => d.type === "blocks");
 
   return (
     <Dialog open={!!card} onClose={onClose} title="" maxWidth="lg">
@@ -284,78 +309,68 @@ export function CardDetailDialog({ card, allCards, onClose, onUpdate, onMove, on
           </div>
         </div>
 
-        {/* Dependencies */}
+        {/* Goal Links */}
         <div>
-          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Dependencies</p>
+          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Goal Links</p>
 
-          {blockers.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[10px] text-neutral-400 mb-1">Blocked by:</p>
-              <div className="space-y-1">
-                {blockers.map((dep) => (
-                  <div key={dep.id} className="flex items-center gap-2 group py-1 px-2 bg-rose-50/50 rounded-[var(--radius-sm)] border border-rose-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-                    <span className="flex-1 text-sm text-neutral-700 truncate">{dep.cardTitle}</span>
-                    <button onClick={() => removeDependency(dep.id)} className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-rose-500 transition-all">
+          {localLinks.length > 0 && (
+            <div className="space-y-1 mb-2">
+              {localLinks.map((link) => {
+                const style = LINK_TYPE_STYLES[link.link_type];
+                return (
+                  <div
+                    key={link.id}
+                    className={`flex items-center gap-2 group py-1 px-2 rounded-[var(--radius-sm)] border ${style.bg} ${style.border}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} />
+                    <span className="flex-1 text-sm text-neutral-700 truncate">{link.goalTitle}</span>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${style.badge} shrink-0`}>
+                      {link.link_type}
+                    </span>
+                    <button
+                      onClick={() => removeGoalLink(link.id)}
+                      className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-rose-500 transition-all"
+                    >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {blocking.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[10px] text-neutral-400 mb-1">Blocks:</p>
-              <div className="space-y-1">
-                {blocking.map((dep) => (
-                  <div key={dep.id} className="flex items-center gap-2 group py-1 px-2 bg-amber-50/50 rounded-[var(--radius-sm)] border border-amber-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <span className="flex-1 text-sm text-neutral-700 truncate">{dep.cardTitle}</span>
-                    <button onClick={() => removeDependency(dep.id)} className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-rose-500 transition-all">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           )}
 
           <div className="relative">
             <div className="flex items-center gap-2">
               <select
-                value={depType}
-                onChange={(e) => setDepType(e.target.value as "blocks" | "blocked_by")}
+                value={goalLinkType}
+                onChange={(e) => setGoalLinkType(e.target.value as GoalLink["link_type"])}
                 className="text-xs border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-200"
               >
-                <option value="blocked_by">Blocked by</option>
-                <option value="blocks">Blocks</option>
+                {LINK_TYPE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
               <Button
                 variant="ghost"
                 size="sm"
                 icon={<Link2 className="w-3 h-3" />}
-                onClick={() => setDepDropdownOpen(!depDropdownOpen)}
-                disabled={otherCards.length === 0}
+                onClick={() => setGoalLinkDropdownOpen(!goalLinkDropdownOpen)}
+                disabled={unlinkableGoals.length === 0}
               >
-                Link card
+                Link goal
               </Button>
             </div>
-            {depDropdownOpen && otherCards.length > 0 && (
+            {goalLinkDropdownOpen && unlinkableGoals.length > 0 && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setDepDropdownOpen(false)} />
+                <div className="fixed inset-0 z-10" onClick={() => setGoalLinkDropdownOpen(false)} />
                 <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1 max-h-48 overflow-y-auto min-w-[240px]">
-                  {otherCards.slice(0, 20).map((c) => (
+                  {unlinkableGoals.map((goal) => (
                     <button
-                      key={c.id}
-                      onClick={() => addDependency(c)}
+                      key={goal.id}
+                      onClick={() => addGoalLink(goal)}
                       className="w-full text-left px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 truncate"
                     >
-                      {c.priority && (
-                        <span className="text-[10px] font-medium text-neutral-400 mr-1.5">{c.priority.toUpperCase()}</span>
-                      )}
-                      {c.title}
+                      {goal.title}
                     </button>
                   ))}
                 </div>

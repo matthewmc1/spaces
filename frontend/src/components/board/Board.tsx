@@ -273,7 +273,7 @@ export function Board({
 
       <CardDetailDialog
         card={selectedCard}
-        allCards={cards}
+        spaceId={spaceId}
         onClose={() => setSelectedCard(null)}
         onUpdate={(cardId, updates) =>
           updateCard.mutate({ cardId, input: updates })
