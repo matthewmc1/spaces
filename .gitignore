@@ -19,8 +19,4 @@ frontend/out/
 .vscode/
 
 .playwright-mcp
-docs/
-docs/specs
-docs/superpowers
-
 node_modules/
