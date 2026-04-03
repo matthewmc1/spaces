@@ -78,7 +78,35 @@ export function FeatureCards() {
             delay="0.6s"
           />
         </div>
+        {/* How it works section */}
+        <div className="max-w-4xl mx-auto mt-20 pt-16 border-t border-neutral-200/60">
+          <div className="text-center mb-10">
+            <p className="text-xs font-medium text-primary-600 uppercase tracking-[0.08em] mb-3">
+              How teams use Spaces
+            </p>
+            <h2 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
+              From chaos to clarity in three steps
+            </h2>
+          </div>
+          <div className="space-y-8">
+            <Step number="01" title="Capture everything in your inbox" description="Every idea, request, and initiative starts in the inbox. No more lost Slack threads or forgotten email asks. Triage when you're ready — ice box what needs definition, freeze what needs validation." />
+            <Step number="02" title="Plan with alignment" description="Link work to strategic goals at any level. See at a glance whether your sprint is driving quarterly objectives or drifting toward busy work. Configurable columns adapt to your team's flow." />
+            <Step number="03" title="Deliver with visibility" description="Track cycle times, spot bottlenecks, and celebrate completions. Leadership sees the roll-up across all spaces. Teams see their own board. Everyone sees the same truth." />
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function Step({ number, title, description }: { number: string; title: string; description: string }) {
+  return (
+    <div className="flex gap-6 items-start">
+      <span className="text-3xl font-[family-name:var(--font-mono)] font-bold text-primary-200 shrink-0 w-12">{number}</span>
+      <div>
+        <h3 className="text-lg font-[family-name:var(--font-display)] text-neutral-800 mb-1">{title}</h3>
+        <p className="text-sm text-neutral-500 leading-relaxed">{description}</p>
+      </div>
+    </div>
   );
 }

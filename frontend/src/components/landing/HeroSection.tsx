@@ -81,8 +81,7 @@ export function HeroSection() {
           className="mt-5 text-lg text-neutral-500 max-w-xl mx-auto leading-relaxed animate-fade-in-up"
           style={{ animationDelay: "0.2s" }}
         >
-          Plan, prioritize, and deliver with clarity across every team and
-          workstream. From inbox to done, with alignment at every stage.
+          From strategic vision to daily delivery. Spaces gives your teams the clarity to align on what matters, see where effort flows, and ship with confidence.
         </p>
         <div
           className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up"
@@ -94,6 +93,23 @@ export function HeroSection() {
           <Button variant="secondary" size="lg">
             Learn More
           </Button>
+        </div>
+        <div className="mt-12 animate-fade-in-up" style={{ animationDelay: "0.35s" }}>
+          <p className="text-xs text-neutral-400 uppercase tracking-[0.1em] mb-3">Why clarity matters</p>
+          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto text-left">
+            <div>
+              <p className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-primary-600">73%</p>
+              <p className="text-xs text-neutral-500 mt-1">of strategic initiatives fail due to poor alignment between teams and goals</p>
+            </div>
+            <div>
+              <p className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-primary-600">2.5x</p>
+              <p className="text-xs text-neutral-500 mt-1">faster delivery when teams can see how their work connects to outcomes</p>
+            </div>
+            <div>
+              <p className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-primary-600">40%</p>
+              <p className="text-xs text-neutral-500 mt-1">reduction in wasted effort when priorities are visible across the org</p>
+            </div>
+          </div>
         </div>
       </div>
       <BoardPreview />
