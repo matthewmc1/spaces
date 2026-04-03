@@ -1,17 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Target, TrendingUp, Users, Clock } from "lucide-react";
+import { ChevronDown, ChevronUp, Target, TrendingUp, Users, Clock, Pencil } from "lucide-react";
 import type { Card } from "@/types/card";
 
 interface SpaceOverviewProps {
   spaceName: string;
   spaceDescription?: string;
   cards?: Card[];
+  onUpdateDescription?: (description: string) => void;
 }
 
-export function SpaceOverview({ spaceName, spaceDescription, cards = [] }: SpaceOverviewProps) {
+export function SpaceOverview({ spaceName, spaceDescription, cards = [], onUpdateDescription }: SpaceOverviewProps) {
   const [expanded, setExpanded] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descDraft, setDescDraft] = useState(spaceDescription ?? "");
 
   const totalCards = cards.length;
   const doneCards = cards.filter(c => c.column_name === "done").length;
@@ -110,10 +113,37 @@ export function SpaceOverview({ spaceName, spaceDescription, cards = [] }: Space
       )}
 
       {/* Narrative */}
-      {expanded && spaceDescription && (
+      {expanded && (
         <div className="mt-3 bg-white rounded-[var(--radius-lg)] border border-neutral-200/60 p-4 shadow-[var(--shadow-sm)]">
-          <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-medium mb-1.5">About this space</p>
-          <p className="text-sm text-neutral-600 leading-relaxed">{spaceDescription}</p>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-medium">About this space</p>
+            <Pencil size={10} className="text-neutral-300" />
+          </div>
+          {editingDesc ? (
+            <div className="space-y-2">
+              <textarea
+                value={descDraft}
+                onChange={(e) => setDescDraft(e.target.value)}
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-md)] px-3 py-2 text-sm text-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
+                rows={3}
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setEditingDesc(false)} className="text-xs text-neutral-400 hover:text-neutral-600 px-2 py-1">Cancel</button>
+                <button
+                  onClick={() => { onUpdateDescription?.(descDraft); setEditingDesc(false); }}
+                  className="text-xs bg-primary-500 text-white px-3 py-1 rounded-[var(--radius-sm)] hover:bg-primary-600"
+                >Save</button>
+              </div>
+            </div>
+          ) : (
+            <div className="group cursor-pointer" onClick={() => setEditingDesc(true)}>
+              <p className="text-sm text-neutral-600 leading-relaxed">
+                {spaceDescription || <span className="italic text-neutral-400">Click to add a description...</span>}
+              </p>
+              <Pencil size={11} className="inline text-neutral-300 group-hover:text-neutral-500 ml-1" />
+            </div>
+          )}
         </div>
       )}
     </div>
