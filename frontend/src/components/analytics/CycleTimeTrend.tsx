@@ -1,46 +1,24 @@
 import { useState } from "react";
 import { Info } from "lucide-react";
-import type { Card } from "@/types/card";
+import type { DailySnapshot } from "@/types/metrics";
 
 interface CycleTimeTrendProps {
-  cards?: Card[];
+  avgDays?: number;
+  cumulativeFlow?: DailySnapshot[];
 }
 
-function computeCycleData(cards: Card[]) {
-  const now = new Date();
-  const activeCards = cards.filter(c => c.column_name !== "done" && c.column_name !== "inbox");
-
-  if (activeCards.length === 0) return { data: [], currentValue: "0d" };
-
-  // Bucket cards by week of moved_at to approximate a trend
-  const weekBuckets: Record<number, number[]> = {};
-  for (const card of activeCards) {
-    const moved = new Date(card.moved_at);
-    const daysAgo = Math.floor((now.getTime() - moved.getTime()) / (1000 * 60 * 60 * 24));
-    const ageDays = (now.getTime() - moved.getTime()) / (1000 * 60 * 60 * 24);
-    const weekIndex = Math.min(Math.floor(daysAgo / 7), 3); // 4 weeks max
-    if (!weekBuckets[weekIndex]) weekBuckets[weekIndex] = [];
-    weekBuckets[weekIndex].push(ageDays);
-  }
-
-  const data: number[] = [];
-  for (let w = 3; w >= 0; w--) {
-    const bucket = weekBuckets[w] || [];
-    const avg = bucket.length > 0 ? bucket.reduce((a, b) => a + b, 0) / bucket.length : 0;
-    data.push(Math.round(avg * 10) / 10);
-  }
-
-  const allDays = activeCards.map(c => (now.getTime() - new Date(c.moved_at).getTime()) / (1000 * 60 * 60 * 24));
-  const currentAvg = (allDays.reduce((a, b) => a + b, 0) / allDays.length).toFixed(1);
-
-  return { data, currentValue: `${currentAvg}d` };
-}
-
-export function CycleTimeTrend({ cards }: CycleTimeTrendProps) {
+export function CycleTimeTrend({ avgDays, cumulativeFlow }: CycleTimeTrendProps) {
   const [showTooltip, setShowTooltip] = useState(false);
-  const { data, currentValue } = cards && cards.length > 0
-    ? computeCycleData(cards)
-    : { data: [0], currentValue: "0d" };
+
+  const currentValue = avgDays != null ? `${avgDays.toFixed(1)}d` : "0d";
+
+  // Build trend line: sum all non-done columns per day
+  const snapshots = cumulativeFlow ?? [];
+  const data: number[] = snapshots.map((snap) => {
+    return Object.entries(snap.columns)
+      .filter(([col]) => col !== "done")
+      .reduce((sum, [, count]) => sum + count, 0);
+  });
 
   const max = data.length > 0 ? Math.max(...data) : 1;
   const min = data.length > 0 ? Math.min(...data) : 0;
@@ -92,7 +70,7 @@ export function CycleTimeTrend({ cards }: CycleTimeTrendProps) {
       </p>
       {showTooltip && (
         <div className="absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 px-3 py-2 bg-neutral-800 text-white text-[11px] leading-relaxed rounded-[var(--radius-md)] shadow-lg">
-          Average days active cards have spent in their current column. Trend shows weekly averages over the last 4 weeks. Lower and decreasing values indicate healthy flow.
+          Average days active cards have spent in their current column. Trend shows in-flight card count over time from cumulative flow data. Lower and decreasing values indicate healthy flow.
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-800 rotate-45 -mt-1" />
         </div>
       )}

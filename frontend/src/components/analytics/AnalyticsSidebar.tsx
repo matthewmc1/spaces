@@ -6,37 +6,35 @@ import { AlignmentHealth } from "./AlignmentHealth";
 import { ColumnDistribution } from "./ColumnDistribution";
 import { CycleTimeTrend } from "./CycleTimeTrend";
 import { BottleneckAlert } from "./BottleneckAlert";
+import { useFlowMetrics, useAlignmentMetrics } from "@/hooks/useMetrics";
 import type { Card } from "@/types/card";
 
 interface AnalyticsSidebarProps {
   open: boolean;
   onClose: () => void;
+  spaceId?: string;
   cards?: Card[];
 }
 
-function computeBottleneckMessage(cards: Card[]): string | undefined {
-  const columnCounts: Record<string, number> = {};
-  for (const card of cards) {
-    if (card.column_name === "done") continue;
-    const movedAt = new Date(card.moved_at);
-    const now = new Date();
-    const days = Math.floor((now.getTime() - movedAt.getTime()) / (1000 * 60 * 60 * 24));
-    if (days > 5) {
-      columnCounts[card.column_name] = (columnCounts[card.column_name] || 0) + 1;
-    }
-  }
-  const worst = Object.entries(columnCounts).sort((a, b) => b[1] - a[1])[0];
-  if (!worst) return undefined;
-  const colLabel = worst[0].replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  return `${worst[1]} card${worst[1] > 1 ? "s" : ""} in ${colLabel} for >5 days`;
-}
+export function AnalyticsSidebar({ open, onClose, spaceId, cards: _cards }: AnalyticsSidebarProps) {
+  const { data: flowMetrics } = useFlowMetrics(spaceId ?? "");
+  const { data: alignmentMetrics } = useAlignmentMetrics(spaceId ?? "");
 
-export function AnalyticsSidebar({ open, onClose, cards }: AnalyticsSidebarProps) {
   if (!open) return null;
 
-  const bottleneckMessage = cards && cards.length > 0
-    ? computeBottleneckMessage(cards)
-    : undefined;
+  // Derive bottleneck from flowMetrics by_column: find the non-done/inbox column with most cards
+  let bottleneckMessage: string | undefined;
+  if (flowMetrics?.by_column) {
+    const skipColumns = new Set(["done", "inbox"]);
+    const entries = Object.entries(flowMetrics.by_column).filter(
+      ([col]) => !skipColumns.has(col)
+    );
+    const worst = entries.sort((a, b) => b[1] - a[1])[0];
+    if (worst && worst[1] > 0) {
+      const colLabel = worst[0].replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      bottleneckMessage = `${worst[1]} card${worst[1] > 1 ? "s" : ""} in ${colLabel}`;
+    }
+  }
 
   return (
     <aside className="w-[320px] flex-shrink-0 bg-white border-l border-neutral-200 h-full overflow-y-auto">
@@ -57,13 +55,13 @@ export function AnalyticsSidebar({ open, onClose, cards }: AnalyticsSidebarProps
         </button>
       </div>
       <div className="px-5 py-5 space-y-5">
-        <FlowSummary cards={cards} />
+        <FlowSummary flow={flowMetrics} />
         <div className="border-t border-neutral-100" />
-        <AlignmentHealth cards={cards} />
+        <AlignmentHealth alignment={alignmentMetrics} />
         <div className="border-t border-neutral-100" />
-        <ColumnDistribution cards={cards} />
+        <ColumnDistribution byColumn={flowMetrics?.by_column} />
         <div className="border-t border-neutral-100" />
-        <CycleTimeTrend cards={cards} />
+        <CycleTimeTrend avgDays={flowMetrics?.avg_cycle_time_days} cumulativeFlow={flowMetrics?.cumulative_flow} />
         <div className="border-t border-neutral-100" />
         <BottleneckAlert message={bottleneckMessage} />
       </div>

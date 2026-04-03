@@ -1,9 +1,7 @@
 import { COLUMNS, type Column } from "@/types/card";
-import type { Card } from "@/types/card";
 
 interface ColumnDistributionProps {
-  counts?: Record<Column, number>;
-  cards?: Card[];
+  byColumn?: Record<string, number>;
 }
 
 const segmentColors: Record<Column, string> = {
@@ -16,19 +14,10 @@ const segmentColors: Record<Column, string> = {
   done: "bg-emerald-500",
 };
 
-export function ColumnDistribution({ counts, cards }: ColumnDistributionProps) {
-  let data: Record<Column, number>;
-
-  data = Object.fromEntries(COLUMNS.map(({ key }) => [key, 0])) as Record<Column, number>;
-  if (cards && cards.length > 0) {
-    for (const card of cards) {
-      if (data[card.column_name] !== undefined) {
-        data[card.column_name]++;
-      }
-    }
-  } else if (counts) {
-    data = counts;
-  }
+export function ColumnDistribution({ byColumn }: ColumnDistributionProps) {
+  const data = Object.fromEntries(
+    COLUMNS.map(({ key }) => [key, byColumn?.[key] ?? 0])
+  ) as Record<Column, number>;
 
   const total = Object.values(data).reduce((a, b) => a + b, 0);
 

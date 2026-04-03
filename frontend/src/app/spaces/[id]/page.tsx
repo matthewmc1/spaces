@@ -40,6 +40,7 @@ export default function SpacePage({
       <AnalyticsSidebar
         open={insightsOpen}
         onClose={() => setInsightsOpen(false)}
+        spaceId={id}
         cards={cards}
       />
     </div>

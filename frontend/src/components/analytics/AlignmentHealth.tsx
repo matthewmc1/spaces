@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { Info } from "lucide-react";
-import type { Card } from "@/types/card";
+import type { AlignmentMetrics } from "@/types/metrics";
 
 interface AlignmentHealthProps {
-  cards?: Card[];
+  alignment?: AlignmentMetrics;
 }
 
-export function AlignmentHealth({ cards }: AlignmentHealthProps) {
+export function AlignmentHealth({ alignment }: AlignmentHealthProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const allCards = cards || [];
-  const total = allCards.length;
-  const withPriority = allCards.filter((c) => c.priority).length;
-  const percentage = total > 0 ? Math.round((withPriority / total) * 100) : 0;
-  const unlinked = total - withPriority;
+  const percentage = alignment != null ? Math.round(alignment.linked_pct) : 0;
+  const linkedCount = alignment?.linked_count ?? 0;
+  const totalInFlight = alignment?.total_in_flight ?? 0;
+  const orphanedGoals = alignment?.orphaned_goals ?? [];
+  const unlinkedHighPri = alignment?.unlinked_high_pri ?? [];
 
   const circumference = 2 * Math.PI * 36;
   const offset = circumference - (percentage / 100) * circumference;
@@ -61,15 +61,31 @@ export function AlignmentHealth({ cards }: AlignmentHealthProps) {
           </span>
         </div>
         <div className="text-sm text-neutral-600 space-y-1">
-          <p>{withPriority} of {total} cards prioritized</p>
-          {unlinked > 0 && (
-            <p className="text-amber-600 text-xs">{unlinked} cards without priority</p>
+          <p>{linkedCount} of {totalInFlight} cards linked</p>
+          {orphanedGoals.length > 0 && (
+            <div className="text-xs text-rose-600 space-y-0.5">
+              <p className="font-medium">Orphaned goals:</p>
+              {orphanedGoals.map((g) => (
+                <p key={g.id} className="truncate max-w-[140px]">{g.title}</p>
+              ))}
+            </div>
+          )}
+          {unlinkedHighPri.length > 0 && (
+            <div className="text-xs text-amber-600 space-y-0.5">
+              <p className="font-medium">Unlinked high-pri:</p>
+              {unlinkedHighPri.map((c) => (
+                <p key={c.id} className="truncate max-w-[140px] flex items-center gap-1">
+                  <span className="bg-amber-100 text-amber-700 px-1 rounded text-[10px] font-medium shrink-0">{c.priority}</span>
+                  {c.title}
+                </p>
+              ))}
+            </div>
           )}
         </div>
       </div>
       {showTooltip && (
         <div className="absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 px-3 py-2 bg-neutral-800 text-white text-[11px] leading-relaxed rounded-[var(--radius-md)] shadow-lg">
-          Measures what percentage of cards have a priority assigned. High alignment means work is clearly triaged and nothing is falling through the cracks.
+          Measures what percentage of in-flight cards are linked to a goal. High alignment means work is clearly connected to strategic objectives.
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-800 rotate-45 -mt-1" />
         </div>
       )}

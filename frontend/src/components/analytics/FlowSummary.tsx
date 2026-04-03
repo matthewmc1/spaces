@@ -1,8 +1,8 @@
 import { MetricCard } from "@/components/ui/MetricCard";
-import type { Card } from "@/types/card";
+import type { FlowMetrics } from "@/types/metrics";
 
 interface FlowSummaryProps {
-  cards?: Card[];
+  flow?: FlowMetrics;
 }
 
 const TOOLTIPS = {
@@ -12,26 +12,11 @@ const TOOLTIPS = {
   completion: "Percentage of all cards that are Done. Calculated as Done / Total cards.",
 };
 
-export function FlowSummary({ cards }: FlowSummaryProps) {
-  const activeColumns = ["planned", "in_progress", "review"];
-  const allCards = cards || [];
-  const total = allCards.length;
-  const inFlight = allCards.filter((c) => activeColumns.includes(c.column_name)).length;
-  const doneCards = allCards.filter((c) => c.column_name === "done");
-  const throughput = doneCards.length;
-  const completion = total > 0 ? Math.round((throughput / total) * 100) : 0;
-
-  const now = new Date();
-  const daysInColumn = allCards
-    .filter((c) => c.column_name !== "done")
-    .map((c) => {
-      const moved = new Date(c.moved_at);
-      return (now.getTime() - moved.getTime()) / (1000 * 60 * 60 * 24);
-    });
-  const avgDays =
-    daysInColumn.length > 0
-      ? (daysInColumn.reduce((a, b) => a + b, 0) / daysInColumn.length).toFixed(1)
-      : "0";
+export function FlowSummary({ flow }: FlowSummaryProps) {
+  const inFlight = flow?.in_flight ?? 0;
+  const avgDays = flow != null ? flow.avg_cycle_time_days.toFixed(1) : "0";
+  const throughput = flow?.throughput ?? 0;
+  const completion = flow != null ? Math.round(flow.completion_pct) : 0;
 
   return (
     <div>
