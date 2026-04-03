@@ -21,6 +21,24 @@ export function useCards(spaceId: string) {
   });
 }
 
+export function useSpaceCardCounts(spaceIds: string[]) {
+  return useQuery({
+    queryKey: ["space-card-counts", ...spaceIds],
+    queryFn: async () => {
+      const results: Record<string, Card[]> = {};
+      await Promise.all(
+        spaceIds.map(async (id) => {
+          const res = await listCards(id, { limit: 200 });
+          results[id] = res.data;
+        })
+      );
+      return results;
+    },
+    enabled: spaceIds.length > 0,
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useCreateCard(spaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({

@@ -17,3 +17,10 @@ frontend/out/
 # IDE
 .idea/
 .vscode/
+
+.playwright-mcp
+docs/
+docs/specs
+docs/superpowers
+
+node_modules/

@@ -3,23 +3,34 @@
 import Link from "next/link";
 import { Folder, ArrowRight, BarChart3, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { Space } from "@/types/space";
+import type { Card } from "@/types/card";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 interface SpaceDashboardProps {
   spaces: Space[];
   isLoading: boolean;
+  cardsBySpace?: Record<string, Card[]>;
 }
 
-// Mock metrics for demo — will be wired to real API later
-function getMockMetrics(space: Space) {
-  // Deterministic "random" based on space id
-  const hash = space.id.charCodeAt(0) + space.id.charCodeAt(5);
-  const total = 8 + (hash % 20);
-  const done = Math.floor(total * (0.2 + (hash % 5) * 0.12));
-  const inProgress = Math.floor((total - done) * 0.4);
-  const backlog = total - done - inProgress;
-  const cycleTime = (2 + (hash % 8)).toFixed(1);
-  const completion = Math.round((done / total) * 100);
+function getMetrics(cards?: Card[]) {
+  if (!cards || cards.length === 0) {
+    return { total: 0, done: 0, inProgress: 0, backlog: 0, cycleTime: "—", completion: 0, health: "behind" as const };
+  }
+  const total = cards.length;
+  const done = cards.filter(c => c.column_name === "done").length;
+  const inProgress = cards.filter(c => c.column_name === "in_progress" || c.column_name === "review").length;
+  const backlog = cards.filter(c => c.column_name === "inbox" || c.column_name === "icebox" || c.column_name === "freezer" || c.column_name === "planned").length;
+
+  // Avg days in current column for in-flight cards
+  const inFlight = cards.filter(c => ["planned", "in_progress", "review"].includes(c.column_name));
+  let cycleTime = "—";
+  if (inFlight.length > 0) {
+    const now = Date.now();
+    const avgDays = inFlight.reduce((sum, c) => sum + (now - new Date(c.moved_at).getTime()) / (1000 * 60 * 60 * 24), 0) / inFlight.length;
+    cycleTime = avgDays.toFixed(1);
+  }
+
+  const completion = total > 0 ? Math.round((done / total) * 100) : 0;
   const health: "on-track" | "at-risk" | "behind" = completion >= 60 ? "on-track" : completion >= 30 ? "at-risk" : "behind";
 
   return { total, done, inProgress, backlog, cycleTime, completion, health };
@@ -31,8 +42,8 @@ const healthConfig = {
   "behind": { label: "Needs Attention", dot: "bg-rose-400", badge: "bg-rose-50 text-rose-700 border-rose-200" },
 };
 
-function SpaceCard({ space }: { space: Space }) {
-  const metrics = getMockMetrics(space);
+function SpaceCard({ space, cards }: { space: Space; cards?: Card[] }) {
+  const metrics = getMetrics(cards);
   const health = healthConfig[metrics.health];
 
   return (
@@ -135,7 +146,7 @@ function FocusItem({ title, space, priority, status, daysStale }: {
   );
 }
 
-export function SpaceDashboard({ spaces, isLoading }: SpaceDashboardProps) {
+export function SpaceDashboard({ spaces, isLoading, cardsBySpace }: SpaceDashboardProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -170,13 +181,13 @@ export function SpaceDashboard({ spaces, isLoading }: SpaceDashboardProps) {
         </div>
         <div className="flex items-baseline gap-1.5">
           <span className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-emerald-600">
-            {rootSpaces.filter(s => getMockMetrics(s).health === "on-track").length}
+            {rootSpaces.filter(s => getMetrics(cardsBySpace?.[s.id]).health === "on-track").length}
           </span>
           <span className="text-xs text-neutral-400">on track</span>
         </div>
         <div className="flex items-baseline gap-1.5">
           <span className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-amber-600">
-            {rootSpaces.filter(s => getMockMetrics(s).health === "at-risk").length}
+            {rootSpaces.filter(s => getMetrics(cardsBySpace?.[s.id]).health === "at-risk").length}
           </span>
           <span className="text-xs text-neutral-400">at risk</span>
         </div>
@@ -220,7 +231,7 @@ export function SpaceDashboard({ spaces, isLoading }: SpaceDashboardProps) {
       {/* Space cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {rootSpaces.map((space) => (
-          <SpaceCard key={space.id} space={space} />
+          <SpaceCard key={space.id} space={space} cards={cardsBySpace?.[space.id]} />
         ))}
       </div>
 
@@ -232,7 +243,7 @@ export function SpaceDashboard({ spaces, isLoading }: SpaceDashboardProps) {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {childSpaces.map((space) => (
-              <SpaceCard key={space.id} space={space} />
+              <SpaceCard key={space.id} space={space} cards={cardsBySpace?.[space.id]} />
             ))}
           </div>
         </div>

@@ -2,10 +2,13 @@
 
 import { Sidebar } from "@/components/common/Sidebar";
 import { useSpaces } from "@/hooks/useSpaces";
+import { useSpaceCardCounts } from "@/hooks/useCards";
 import { SpaceDashboard } from "@/components/spaces/SpaceDashboard";
 
 export default function SpacesPage() {
   const { data: spaces, isLoading } = useSpaces();
+  const spaceIds = spaces?.map((s) => s.id) ?? [];
+  const { data: cardsBySpace } = useSpaceCardCounts(spaceIds);
 
   return (
     <div className="flex h-screen overflow-hidden bg-neutral-50">
@@ -20,7 +23,11 @@ export default function SpacesPage() {
               Overview of all programs and workstreams. Click a space to view its board.
             </p>
           </div>
-          <SpaceDashboard spaces={spaces ?? []} isLoading={isLoading} />
+          <SpaceDashboard
+            spaces={spaces ?? []}
+            isLoading={isLoading}
+            cardsBySpace={cardsBySpace}
+          />
         </div>
       </main>
     </div>
