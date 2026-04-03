@@ -20,7 +20,7 @@ import { COLUMNS } from "@/types/card";
 import { useCards, useMoveCard, cardsByColumn } from "@/hooks/useCards";
 import { useColumnVisibility } from "@/hooks/useColumnVisibility";
 import { BoardColumn } from "./BoardColumn";
-import { BoardCard } from "./BoardCard";
+import { BoardCard, CardOverlay } from "./BoardCard";
 import { BoardHeader } from "./BoardHeader";
 import { BoardGrouping, type GroupBy } from "./BoardGrouping";
 import { ColumnConfigDropdown } from "./ColumnConfigDropdown";
@@ -254,7 +254,7 @@ export function Board({
           duration: 200,
           easing: "cubic-bezier(0.22, 1, 0.36, 1)",
         }}>
-          {activeCard ? <BoardCard card={activeCard} /> : null}
+          {activeCard ? <CardOverlay card={activeCard} /> : null}
         </DragOverlay>
       </DndContext>
 
