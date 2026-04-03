@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -14,35 +14,50 @@ import {
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { useCards, useMoveCard, cardsByColumn } from "@/hooks/useCards";
+import { useColumnVisibility } from "@/hooks/useColumnVisibility";
 import { BoardColumn } from "./BoardColumn";
 import { BoardCard } from "./BoardCard";
+import { BoardHeader } from "./BoardHeader";
+import { ColumnConfigDropdown } from "./ColumnConfigDropdown";
+import { TriageDrawer } from "./TriageDrawer";
 import { CreateCardDialog } from "./CreateCardDialog";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface BoardProps {
   spaceId: string;
+  spaceName?: string;
+  spaceDescription?: string;
+  insightsOpen: boolean;
+  onToggleInsights: () => void;
 }
 
-export function Board({ spaceId }: BoardProps) {
+export function Board({
+  spaceId,
+  spaceName = "",
+  spaceDescription,
+  insightsOpen,
+  onToggleInsights,
+}: BoardProps) {
   const { data: cards, isLoading } = useCards(spaceId);
   const moveCard = useMoveCard(spaceId);
+  const { visible, toggle, showAll } = useColumnVisibility(spaceId);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [showCreateCard, setShowCreateCard] = useState(false);
+  const [triageOpen, setTriageOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
+      activationConstraint: { distance: 5 },
     })
   );
 
-  const grouped = cardsByColumn(cards ?? []);
+  const grouped = useMemo(() => cardsByColumn(cards ?? []), [cards]);
+
+  const visibleColumns = COLUMNS.filter((col) => visible.includes(col.key));
 
   function onDragStart(event: DragStartEvent) {
     const card = event.active.data.current?.card as Card | undefined;
-    if (card) {
-      setActiveCard(card);
-    }
+    if (card) setActiveCard(card);
   }
 
   function onDragEnd(event: DragEndEvent) {
@@ -54,7 +69,6 @@ export function Board({ spaceId }: BoardProps) {
     const draggedCard = active.data.current?.card as Card | undefined;
     if (!draggedCard) return;
 
-    // Determine target column: either the over item's card column or the over id as Column
     let targetColumn: Column;
     const overCard = over.data.current?.card as Card | undefined;
     if (overCard) {
@@ -63,7 +77,6 @@ export function Board({ spaceId }: BoardProps) {
       targetColumn = over.id as Column;
     }
 
-    // Calculate position
     const targetCards = grouped[targetColumn];
 
     let position: number;
@@ -82,8 +95,9 @@ export function Board({ spaceId }: BoardProps) {
         position = 1000;
       }
     } else {
-      // Drop on column droppable (end of list)
-      const lastCard = targetCards.filter((c) => c.id !== draggedCard.id).at(-1);
+      const lastCard = targetCards
+        .filter((c) => c.id !== draggedCard.id)
+        .at(-1);
       position = lastCard ? lastCard.position + 1000 : 1000;
     }
 
@@ -102,40 +116,67 @@ export function Board({ spaceId }: BoardProps) {
 
   if (isLoading) {
     return (
-      <div className="flex gap-4 p-4 overflow-x-auto">
-        {COLUMNS.map(({ key }) => (
-          <div
-            key={key}
-            className="w-64 flex-shrink-0 h-48 bg-gray-100 rounded-lg animate-pulse"
-          />
-        ))}
+      <div className="space-y-4">
+        <Skeleton variant="rectangle" height="40px" width="300px" />
+        <div className="flex gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} variant="rectangle" width="280px" height="200px" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-      >
-        <div className="flex gap-4 p-4 overflow-x-auto h-full">
-          {COLUMNS.map(({ key, label }) => (
-            <BoardColumn
-              key={key}
-              column={key}
-              label={label}
-              cards={grouped[key]}
-              onAddCard={key === "inbox" ? () => setShowCreateCard(true) : undefined}
-            />
-          ))}
-        </div>
-        <DragOverlay>
-          {activeCard ? <BoardCard card={activeCard} /> : null}
-        </DragOverlay>
-      </DndContext>
+      <BoardHeader
+        spaceName={spaceName}
+        spaceDescription={spaceDescription}
+        triageOpen={triageOpen}
+        onToggleTriage={() => setTriageOpen(!triageOpen)}
+        insightsOpen={insightsOpen}
+        onToggleInsights={onToggleInsights}
+        columnConfigSlot={
+          <ColumnConfigDropdown
+            visible={visible}
+            onToggle={toggle}
+            onShowAll={showAll}
+          />
+        }
+      />
+
+      <div className="flex flex-1 overflow-hidden">
+        <TriageDrawer
+          open={triageOpen}
+          onClose={() => setTriageOpen(false)}
+          cardsByColumn={grouped}
+          onAddCard={() => setShowCreateCard(true)}
+        />
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+        >
+          <div className="flex gap-4 overflow-x-auto flex-1 pb-4">
+            {visibleColumns.map(({ key, label }) => (
+              <BoardColumn
+                key={key}
+                column={key}
+                label={label}
+                cards={grouped[key]}
+                onAddCard={
+                  key === "inbox" ? () => setShowCreateCard(true) : undefined
+                }
+              />
+            ))}
+          </div>
+          <DragOverlay>
+            {activeCard ? <BoardCard card={activeCard} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
 
       {showCreateCard && (
         <CreateCardDialog
