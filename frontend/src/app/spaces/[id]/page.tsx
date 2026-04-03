@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/common/Sidebar";
 import { Board } from "@/components/board/Board";
 import { AnalyticsSidebar } from "@/components/analytics/AnalyticsSidebar";
 import { useSpace } from "@/hooks/useSpaces";
+import { useCards } from "@/hooks/useCards";
 
 export default function SpacePage({
   params,
@@ -13,6 +14,7 @@ export default function SpacePage({
 }) {
   const { id } = use(params);
   const { data: space } = useSpace(id);
+  const { data: cards } = useCards(id);
   const [insightsOpen, setInsightsOpen] = useState(false);
 
   return (
@@ -32,6 +34,7 @@ export default function SpacePage({
       <AnalyticsSidebar
         open={insightsOpen}
         onClose={() => setInsightsOpen(false)}
+        cards={cards}
       />
     </div>
   );

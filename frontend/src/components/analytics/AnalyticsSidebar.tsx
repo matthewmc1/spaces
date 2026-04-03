@@ -6,14 +6,37 @@ import { AlignmentHealth } from "./AlignmentHealth";
 import { ColumnDistribution } from "./ColumnDistribution";
 import { CycleTimeTrend } from "./CycleTimeTrend";
 import { BottleneckAlert } from "./BottleneckAlert";
+import type { Card } from "@/types/card";
 
 interface AnalyticsSidebarProps {
   open: boolean;
   onClose: () => void;
+  cards?: Card[];
 }
 
-export function AnalyticsSidebar({ open, onClose }: AnalyticsSidebarProps) {
+function computeBottleneckMessage(cards: Card[]): string | undefined {
+  const columnCounts: Record<string, number> = {};
+  for (const card of cards) {
+    if (card.column_name === "done") continue;
+    const movedAt = new Date(card.moved_at);
+    const now = new Date();
+    const days = Math.floor((now.getTime() - movedAt.getTime()) / (1000 * 60 * 60 * 24));
+    if (days > 5) {
+      columnCounts[card.column_name] = (columnCounts[card.column_name] || 0) + 1;
+    }
+  }
+  const worst = Object.entries(columnCounts).sort((a, b) => b[1] - a[1])[0];
+  if (!worst) return undefined;
+  const colLabel = worst[0].replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return `${worst[1]} card${worst[1] > 1 ? "s" : ""} in ${colLabel} for >5 days`;
+}
+
+export function AnalyticsSidebar({ open, onClose, cards }: AnalyticsSidebarProps) {
   if (!open) return null;
+
+  const bottleneckMessage = cards && cards.length > 0
+    ? computeBottleneckMessage(cards)
+    : "3 cards in Review for >5 days";
 
   return (
     <aside className="w-[320px] flex-shrink-0 bg-white border-l border-neutral-200 h-full overflow-y-auto">
@@ -34,15 +57,15 @@ export function AnalyticsSidebar({ open, onClose }: AnalyticsSidebarProps) {
         </button>
       </div>
       <div className="px-5 py-5 space-y-5">
-        <FlowSummary />
+        <FlowSummary cards={cards} />
         <div className="border-t border-neutral-100" />
         <AlignmentHealth />
         <div className="border-t border-neutral-100" />
-        <ColumnDistribution />
+        <ColumnDistribution cards={cards} />
         <div className="border-t border-neutral-100" />
         <CycleTimeTrend />
         <div className="border-t border-neutral-100" />
-        <BottleneckAlert message="3 cards in Review for >5 days" />
+        <BottleneckAlert message={bottleneckMessage} />
       </div>
     </aside>
   );
