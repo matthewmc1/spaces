@@ -43,20 +43,24 @@ export function useMoveCard(spaceId: string) {
     }) => moveCard(cardId, input),
     onMutate: async ({ cardId, input }) => {
       await queryClient.cancelQueries({ queryKey: ["cards", spaceId] });
-      const previousCards = queryClient.getQueryData<Card[]>(["cards", spaceId]);
-      queryClient.setQueryData<Card[]>(["cards", spaceId], (old) => {
-        if (!old) return old;
-        return old.map((card) =>
-          card.id === cardId
-            ? { ...card, column_name: input.column, position: input.position }
-            : card
-        );
-      });
-      return { previousCards };
+      // Cache stores PaginatedResponse, not raw Card[]
+      type CachedData = { data: Card[]; pagination: { next_cursor?: string; has_more: boolean } };
+      const previous = queryClient.getQueryData<CachedData>(["cards", spaceId]);
+      if (previous) {
+        queryClient.setQueryData<CachedData>(["cards", spaceId], {
+          ...previous,
+          data: previous.data.map((card) =>
+            card.id === cardId
+              ? { ...card, column_name: input.column, position: input.position }
+              : card
+          ),
+        });
+      }
+      return { previous };
     },
     onError: (_err, _vars, context) => {
-      if (context?.previousCards) {
-        queryClient.setQueryData(["cards", spaceId], context.previousCards);
+      if (context?.previous) {
+        queryClient.setQueryData(["cards", spaceId], context.previous);
       }
     },
     onSettled: () => {

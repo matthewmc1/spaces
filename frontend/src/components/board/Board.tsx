@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { useCards, useMoveCard, cardsByColumn } from "@/hooks/useCards";
@@ -23,6 +27,29 @@ import { TriageDrawer } from "./TriageDrawer";
 import { CreateCardDialog } from "./CreateCardDialog";
 import { CardDetailDialog } from "./CardDetailDialog";
 import { Skeleton } from "@/components/ui/Skeleton";
+
+const COLUMN_IDS = new Set<string>(COLUMNS.map((c) => c.key));
+
+// Custom collision: prefer column droppables over card sortables
+const customCollision: CollisionDetection = (args) => {
+  // First check pointer-within for columns
+  const pointerCollisions = pointerWithin(args);
+
+  // If pointer is within a column droppable, use that
+  const columnHit = pointerCollisions.find((c) => COLUMN_IDS.has(String(c.id)));
+  if (columnHit) {
+    // Also check if pointer is over a specific card within that column
+    const cardHit = pointerCollisions.find((c) => !COLUMN_IDS.has(String(c.id)));
+    if (cardHit) return [cardHit]; // Drop on specific card position
+    return [columnHit]; // Drop on column (end of list)
+  }
+
+  // Fallback to rectIntersection
+  const rectCollisions = rectIntersection(args);
+  if (rectCollisions.length > 0) return rectCollisions;
+
+  return pointerCollisions;
+};
 
 interface BoardProps {
   spaceId: string;
@@ -49,7 +76,7 @@ export function Board({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
+      activationConstraint: { distance: 8 },
     })
   );
 
@@ -66,23 +93,31 @@ export function Board({
   }
 
   function onDragEnd(event: DragEndEvent) {
+    const currentActive = activeCard;
     setActiveCard(null);
 
     const { active, over } = event;
-    if (!over) return;
+    if (!over || !currentActive) return;
 
     const draggedCard = active.data.current?.card as Card | undefined;
     if (!draggedCard) return;
 
+    // Determine target column
     let targetColumn: Column;
     const overCard = over.data.current?.card as Card | undefined;
+
     if (overCard) {
+      // Dropped on a card — use that card's column
       targetColumn = overCard.column_name;
-    } else {
+    } else if (COLUMN_IDS.has(String(over.id))) {
+      // Dropped on a column droppable
       targetColumn = over.id as Column;
+    } else {
+      return; // Unknown drop target
     }
 
-    const targetCards = grouped[targetColumn];
+    // Calculate position
+    const targetCards = grouped[targetColumn] || [];
 
     let position: number;
     if (overCard && overCard.id !== draggedCard.id) {
@@ -100,12 +135,14 @@ export function Board({
         position = 1000;
       }
     } else {
+      // Dropped on column — go to end
       const lastCard = targetCards
         .filter((c) => c.id !== draggedCard.id)
         .at(-1);
       position = lastCard ? lastCard.position + 1000 : 1000;
     }
 
+    // Skip if no actual change
     if (
       draggedCard.column_name === targetColumn &&
       Math.abs(draggedCard.position - position) < 0.001
@@ -125,7 +162,12 @@ export function Board({
         <Skeleton variant="rectangle" height="40px" width="300px" />
         <div className="flex gap-5">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} variant="rectangle" width="280px" height="200px" />
+            <Skeleton
+              key={i}
+              variant="rectangle"
+              width="280px"
+              height="200px"
+            />
           ))}
         </div>
       </div>
@@ -154,7 +196,7 @@ export function Board({
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={customCollision}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
@@ -175,14 +217,16 @@ export function Board({
                 label={label}
                 cards={grouped[key]}
                 onAddCard={
-                  key === "inbox" ? () => setShowCreateCard(true) : undefined
+                  key === "inbox"
+                    ? () => setShowCreateCard(true)
+                    : undefined
                 }
                 onCardClick={setSelectedCard}
               />
             ))}
           </div>
         </div>
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeCard ? <BoardCard card={activeCard} /> : null}
         </DragOverlay>
       </DndContext>
@@ -190,7 +234,12 @@ export function Board({
       <CardDetailDialog
         card={selectedCard}
         onClose={() => setSelectedCard(null)}
-        onMove={(id, col, pos) => moveCard.mutate({ cardId: id, input: { column: col, position: pos } })}
+        onMove={(id, col, pos) =>
+          moveCard.mutate({
+            cardId: id,
+            input: { column: col, position: pos },
+          })
+        }
       />
 
       {showCreateCard && (

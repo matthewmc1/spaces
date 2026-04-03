@@ -27,6 +27,7 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: Bo
 
   return (
     <div
+      ref={setNodeRef}
       className={`flex flex-col rounded-[var(--radius-lg)] border-t-2 w-[280px] flex-shrink-0 bg-neutral-50/80 ${
         colConfig?.borderColor ?? "border-t-neutral-300"
       } ${
@@ -56,8 +57,7 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: Bo
 
       {/* Cards */}
       <div
-        ref={setNodeRef}
-        className={`flex flex-col gap-2 px-2.5 py-2.5 overflow-y-auto min-h-[160px] ${
+        className={`flex flex-col gap-2 px-2.5 py-2.5 overflow-y-auto min-h-[160px] flex-1 ${
           cards.length === 0
             ? "items-center justify-center"
             : ""
