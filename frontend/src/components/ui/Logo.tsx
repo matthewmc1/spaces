@@ -28,7 +28,7 @@ export function Logo({ variant = "full", size = 32, className = "" }: LogoProps)
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <LogoMark size={size} />
-      <LogoText className="text-lg" />
+      <LogoText className="text-xl" />
     </div>
   );
 }

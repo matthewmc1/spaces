@@ -19,7 +19,7 @@ export function SpaceTree({ activeSpaceId }: SpaceTreeProps) {
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+        <span className="text-[10px] font-[family-name:var(--font-sans)] font-semibold text-neutral-300 uppercase tracking-[0.1em]">
           Spaces
         </span>
         <button

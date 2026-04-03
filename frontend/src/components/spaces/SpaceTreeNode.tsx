@@ -52,7 +52,7 @@ export function SpaceTreeNode({
         </button>
         <Link
           href={`/spaces/${space.id}`}
-          className="flex items-center gap-2 flex-1 min-w-0 text-sm font-medium truncate"
+          className="flex items-center gap-2 flex-1 min-w-0 text-[13px] font-[family-name:var(--font-sans)] font-medium truncate"
         >
           <Folder
             size={14}

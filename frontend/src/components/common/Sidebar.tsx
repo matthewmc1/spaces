@@ -15,7 +15,7 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
       {/* Logo + Motivational */}
       <div className="px-5 pt-5 pb-3">
         <Link href="/spaces" className="inline-block">
-          <Logo variant="full" size={26} />
+          <Logo variant="full" size={32} />
         </Link>
         <MotivationalBanner />
       </div>
@@ -29,7 +29,7 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
         </p>
         <Link
           href="/spaces"
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-md)] text-[13px] text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 transition-all group"
+          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-md)] text-[13px] font-[family-name:var(--font-sans)] text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 transition-all group"
         >
           <LayoutDashboard size={15} className="text-neutral-400 group-hover:text-primary-500 transition-colors" />
           <span>All Spaces</span>
@@ -57,7 +57,7 @@ function SidebarLink({ href, icon, label }: { href: string; icon: React.ReactNod
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] text-[12px] text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 transition-colors"
+      className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-[family-name:var(--font-sans)] text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 transition-colors"
     >
       {icon}
       <span>{label}</span>
