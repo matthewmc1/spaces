@@ -5,6 +5,7 @@ import { FlowSummary } from "./FlowSummary";
 import { AlignmentHealth } from "./AlignmentHealth";
 import { ColumnDistribution } from "./ColumnDistribution";
 import { CycleTimeTrend } from "./CycleTimeTrend";
+import { CumulativeFlowDiagram } from "./CumulativeFlowDiagram";
 import { BottleneckAlert } from "./BottleneckAlert";
 import { useFlowMetrics, useAlignmentMetrics } from "@/hooks/useMetrics";
 import type { Card } from "@/types/card";
@@ -60,6 +61,8 @@ export function AnalyticsSidebar({ open, onClose, spaceId, cards: _cards }: Anal
         <AlignmentHealth alignment={alignmentMetrics} />
         <div className="border-t border-neutral-100" />
         <ColumnDistribution byColumn={flowMetrics?.by_column} />
+        <div className="border-t border-neutral-100" />
+        <CumulativeFlowDiagram cumulativeFlow={flowMetrics?.cumulative_flow} />
         <div className="border-t border-neutral-100" />
         <CycleTimeTrend avgDays={flowMetrics?.avg_cycle_time_days} cumulativeFlow={flowMetrics?.cumulative_flow} />
         <div className="border-t border-neutral-100" />
