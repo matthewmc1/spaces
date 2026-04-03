@@ -40,7 +40,7 @@ export function useMoveCard(spaceId: string) {
     }: {
       cardId: string;
       input: MoveCardInput;
-    }) => moveCard(spaceId, cardId, input),
+    }) => moveCard(cardId, input),
     onMutate: async ({ cardId, input }) => {
       await queryClient.cancelQueries({ queryKey: ["cards", spaceId] });
       const previousCards = queryClient.getQueryData<Card[]>(["cards", spaceId]);
@@ -68,7 +68,7 @@ export function useMoveCard(spaceId: string) {
 export function useDeleteCard(spaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (cardId: string) => deleteCard(spaceId, cardId),
+    mutationFn: (cardId: string) => deleteCard(cardId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cards", spaceId] });
     },

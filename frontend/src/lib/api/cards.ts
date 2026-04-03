@@ -23,7 +23,7 @@ export function listCards(
   if (params.cursor) query.set("cursor", params.cursor);
 
   const qs = query.toString();
-  const path = `/api/v1/spaces/${spaceId}/cards${qs ? `?${qs}` : ""}`;
+  const path = `/spaces/${spaceId}/cards${qs ? `?${qs}` : ""}`;
   return apiFetch<PaginatedResponse<Card>>(path);
 }
 
@@ -31,36 +31,28 @@ export function createCard(
   spaceId: string,
   input: CreateCardInput
 ): Promise<Card> {
-  return apiFetch<Card>(`/api/v1/spaces/${spaceId}/cards`, {
+  return apiFetch<Card>(`/spaces/${spaceId}/cards`, {
     method: "POST",
     body: JSON.stringify(input),
   });
 }
 
-export function updateCard(
-  spaceId: string,
-  cardId: string,
-  input: Partial<CreateCardInput>
-): Promise<Card> {
-  return apiFetch<Card>(`/api/v1/spaces/${spaceId}/cards/${cardId}`, {
+export function updateCard(cardId: string, input: Partial<Card>): Promise<Card> {
+  return apiFetch<Card>(`/cards/${cardId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function moveCard(cardId: string, input: MoveCardInput): Promise<Card> {
+  return apiFetch<Card>(`/cards/${cardId}/move`, {
     method: "PATCH",
     body: JSON.stringify(input),
   });
 }
 
-export function moveCard(
-  spaceId: string,
-  cardId: string,
-  input: MoveCardInput
-): Promise<Card> {
-  return apiFetch<Card>(`/api/v1/spaces/${spaceId}/cards/${cardId}/move`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function deleteCard(spaceId: string, cardId: string): Promise<void> {
-  return apiFetch<void>(`/api/v1/spaces/${spaceId}/cards/${cardId}`, {
+export function deleteCard(cardId: string): Promise<void> {
+  return apiFetch<void>(`/cards/${cardId}`, {
     method: "DELETE",
   });
 }
