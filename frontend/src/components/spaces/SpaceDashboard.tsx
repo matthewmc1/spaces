@@ -8,6 +8,7 @@ import type { Card } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useUpdateSpace } from "@/hooks/useSpaces";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface SpaceDashboardProps {
   spaces: Space[];
@@ -95,6 +96,8 @@ function StatusDropdown({ space }: { space: Space }) {
 
 function SpaceCard({ space, cards }: { space: Space; cards?: Card[] }) {
   const metrics = getMetrics(cards);
+  const perms = usePermissions();
+  const current = statusConfig[space.status] || statusConfig.on_track;
 
   return (
     <Link href={`/spaces/${space.id}`}>
@@ -114,7 +117,14 @@ function SpaceCard({ space, cards }: { space: Space; cards?: Card[] }) {
               )}
             </div>
           </div>
-          <StatusDropdown space={space} />
+          {perms.canEdit ? (
+            <StatusDropdown space={space} />
+          ) : (
+            <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${current.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${current.dot}`} />
+              {current.label}
+            </span>
+          )}
         </div>
 
         {/* Progress bar */}

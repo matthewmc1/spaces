@@ -17,6 +17,7 @@ interface BoardHeaderProps {
   groupingSlot?: React.ReactNode;
   totalCards?: number;
   totalColumns?: number;
+  canEdit?: boolean;
 }
 
 export function BoardHeader({
@@ -33,6 +34,7 @@ export function BoardHeader({
   groupingSlot,
   totalCards,
   totalColumns,
+  canEdit = true,
 }: BoardHeaderProps) {
   return (
     <div className="flex items-start justify-between pb-4 border-b border-neutral-200/60 mb-5">
@@ -50,13 +52,15 @@ export function BoardHeader({
         )}
       </div>
       <div className="flex items-center gap-2">
-        <Button
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={onAddCard}
-        >
-          Add Card
-        </Button>
+        {canEdit && (
+          <Button
+            size="sm"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={onAddCard}
+          >
+            Add Card
+          </Button>
+        )}
         <div className="w-px h-5 bg-neutral-200" />
         <Button
           variant={triageOpen ? "secondary" : "ghost"}

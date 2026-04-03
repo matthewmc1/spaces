@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -18,6 +18,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { useCards, useMoveCard, useUpdateCard, useDeleteCard, cardsByColumn } from "@/hooks/useCards";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useColumnVisibility } from "@/hooks/useColumnVisibility";
 import { BoardColumn } from "./BoardColumn";
 import { BoardCard, CardOverlay } from "./BoardCard";
@@ -68,6 +69,7 @@ export function Board({
   insightsOpen,
   onToggleInsights,
 }: BoardProps) {
+  const perms = usePermissions();
   const { data: cards, isLoading } = useCards(spaceId);
   const moveCard = useMoveCard(spaceId);
   const updateCard = useUpdateCard(spaceId);
@@ -210,6 +212,7 @@ export function Board({
         onAddCard={() => setShowCreateCard(true)}
         totalCards={totalCards}
         totalColumns={totalColumns}
+        canEdit={perms.canEdit}
         columnConfigSlot={
           <ColumnConfigDropdown
             visible={visible}
@@ -234,7 +237,7 @@ export function Board({
             open={triageOpen}
             onClose={() => setTriageOpen(false)}
             cardsByColumn={grouped}
-            onAddCard={() => setShowCreateCard(true)}
+            onAddCard={perms.canEdit ? () => setShowCreateCard(true) : undefined}
             onCardClick={setSelectedCard}
           />
 
@@ -246,7 +249,7 @@ export function Board({
                 label={label}
                 cards={grouped[key]}
                 onAddCard={
-                  key === "inbox"
+                  perms.canEdit && key === "inbox"
                     ? () => setShowCreateCard(true)
                     : undefined
                 }
@@ -275,19 +278,17 @@ export function Board({
         card={selectedCard}
         spaceId={spaceId}
         onClose={() => setSelectedCard(null)}
-        onUpdate={(cardId, updates) =>
-          updateCard.mutate({ cardId, input: updates })
-        }
-        onMove={(id, col, pos) =>
+        onUpdate={perms.canEdit ? (cardId, updates) =>
+          updateCard.mutate({ cardId, input: updates }) : undefined}
+        onMove={perms.canEdit ? (id, col, pos) =>
           moveCard.mutate({
             cardId: id,
             input: { column: col, position: pos },
-          })
-        }
-        onDelete={(cardId) => deleteCard.mutate(cardId)}
+          }) : undefined}
+        onDelete={perms.canAdmin ? (cardId) => deleteCard.mutate(cardId) : undefined}
       />
 
-      {showCreateCard && (
+      {perms.canEdit && showCreateCard && (
         <CreateCardDialog
           spaceId={spaceId}
           onClose={() => setShowCreateCard(false)}
