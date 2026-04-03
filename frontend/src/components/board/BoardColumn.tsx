@@ -7,17 +7,21 @@ import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { BoardCard } from "./BoardCard";
 
+import type { GroupBy } from "./BoardGrouping";
+
 interface BoardColumnProps {
   column: Column;
   label: string;
   cards: Card[];
   onAddCard?: () => void;
   onCardClick?: (card: Card) => void;
+  isTargeted?: boolean;
+  groupBy?: GroupBy;
 }
 
 const ADD_CARD_COLUMNS: Column[] = ["inbox"];
 
-export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: BoardColumnProps) {
+export function BoardColumn({ column, label, cards, onAddCard, onCardClick, isTargeted, groupBy }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column,
     data: { column },
@@ -32,6 +36,8 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: Bo
         colConfig?.borderColor ?? "border-t-neutral-300"
       } ${
         isOver ? "ring-2 ring-primary-300 ring-inset" : ""
+      } ${
+        isTargeted ? "ring-2 ring-primary-400 bg-primary-50/30" : ""
       } transition-all`}
     >
       {/* Header */}
@@ -72,6 +78,10 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: Bo
               <Plus size={14} className="text-neutral-300" />
               <span className="text-[11px] text-neutral-400">Drop items here</span>
             </div>
+          ) : groupBy === "priority" ? (
+            <PriorityGroups cards={cards} onCardClick={onCardClick} />
+          ) : groupBy === "assignee" ? (
+            <AssigneeGroups cards={cards} onCardClick={onCardClick} />
           ) : (
             cards.map((card) => (
               <BoardCard key={card.id} card={card} onClick={onCardClick} />
@@ -80,5 +90,78 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: Bo
         </SortableContext>
       </div>
     </div>
+  );
+}
+
+function PriorityGroups({ cards, onCardClick }: { cards: Card[]; onCardClick?: (card: Card) => void }) {
+  const groups = [
+    { key: "p0", label: "Critical", color: "text-rose-500" },
+    { key: "p1", label: "High", color: "text-amber-500" },
+    { key: "p2", label: "Medium", color: "text-yellow-600" },
+    { key: "p3", label: "Low", color: "text-neutral-400" },
+    { key: "none", label: "No priority", color: "text-neutral-300" },
+  ];
+
+  return (
+    <>
+      {groups.map(({ key, label, color }) => {
+        const groupCards = cards.filter(c =>
+          key === "none" ? !c.priority : c.priority === key
+        );
+        if (groupCards.length === 0) return null;
+        return (
+          <div key={key} className="mb-2">
+            <div className="flex items-center gap-1.5 px-1 mb-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${color.replace("text-", "bg-")}`} />
+              <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">{label}</span>
+              <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-300">{groupCards.length}</span>
+            </div>
+            {groupCards.map(card => (
+              <div key={card.id} className="mb-1.5">
+                <BoardCard card={card} onClick={onCardClick} />
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function AssigneeGroups({ cards, onCardClick }: { cards: Card[]; onCardClick?: (card: Card) => void }) {
+  const assigned = cards.filter(c => c.assignee_id);
+  const unassigned = cards.filter(c => !c.assignee_id);
+
+  return (
+    <>
+      {assigned.length > 0 && (
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5 px-1 mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+            <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Assigned</span>
+            <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-300">{assigned.length}</span>
+          </div>
+          {assigned.map(card => (
+            <div key={card.id} className="mb-1.5">
+              <BoardCard card={card} onClick={onCardClick} />
+            </div>
+          ))}
+        </div>
+      )}
+      {unassigned.length > 0 && (
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5 px-1 mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
+            <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Unassigned</span>
+            <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-300">{unassigned.length}</span>
+          </div>
+          {unassigned.map(card => (
+            <div key={card.id} className="mb-1.5">
+              <BoardCard card={card} onClick={onCardClick} />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

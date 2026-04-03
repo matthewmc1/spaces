@@ -22,6 +22,7 @@ import { useColumnVisibility } from "@/hooks/useColumnVisibility";
 import { BoardColumn } from "./BoardColumn";
 import { BoardCard } from "./BoardCard";
 import { BoardHeader } from "./BoardHeader";
+import { BoardGrouping, type GroupBy } from "./BoardGrouping";
 import { ColumnConfigDropdown } from "./ColumnConfigDropdown";
 import { TriageDrawer } from "./TriageDrawer";
 import { CreateCardDialog } from "./CreateCardDialog";
@@ -30,25 +31,25 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((c) => c.key));
 
-// Custom collision: prefer column droppables over card sortables
+// Custom collision: use rect intersection so crossing column boundaries triggers detection
 const customCollision: CollisionDetection = (args) => {
-  // First check pointer-within for columns
-  const pointerCollisions = pointerWithin(args);
+  // rectIntersection detects when the dragged item's rectangle overlaps drop targets
+  const rectCollisions = rectIntersection(args);
 
-  // If pointer is within a column droppable, use that
-  const columnHit = pointerCollisions.find((c) => COLUMN_IDS.has(String(c.id)));
-  if (columnHit) {
-    // Also check if pointer is over a specific card within that column
-    const cardHit = pointerCollisions.find((c) => !COLUMN_IDS.has(String(c.id)));
-    if (cardHit) return [cardHit]; // Drop on specific card position
-    return [columnHit]; // Drop on column (end of list)
+  if (rectCollisions.length === 0) {
+    // Fallback to pointer-within for edge cases
+    return pointerWithin(args);
   }
 
-  // Fallback to rectIntersection
-  const rectCollisions = rectIntersection(args);
-  if (rectCollisions.length > 0) return rectCollisions;
+  // Prefer card hits (for positioning within column) over column hits (for end-of-list)
+  const cardHit = rectCollisions.find((c) => !COLUMN_IDS.has(String(c.id)));
+  if (cardHit) return [cardHit];
 
-  return pointerCollisions;
+  // Otherwise use column hit
+  const columnHit = rectCollisions.find((c) => COLUMN_IDS.has(String(c.id)));
+  if (columnHit) return [columnHit];
+
+  return rectCollisions;
 };
 
 interface BoardProps {
@@ -70,9 +71,11 @@ export function Board({
   const moveCard = useMoveCard(spaceId);
   const { visible, toggle, showAll } = useColumnVisibility(spaceId);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
+  const [overColumn, setOverColumn] = useState<Column | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [showCreateCard, setShowCreateCard] = useState(false);
   const [triageOpen, setTriageOpen] = useState(false);
+  const [groupBy, setGroupBy] = useState<GroupBy>("none");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -92,9 +95,24 @@ export function Board({
     if (card) setActiveCard(card);
   }
 
+  function onDragOver(event: DragOverEvent) {
+    const { over } = event;
+    if (!over) { setOverColumn(null); return; }
+
+    const overCard = over.data.current?.card as Card | undefined;
+    if (overCard) {
+      setOverColumn(overCard.column_name);
+    } else if (COLUMN_IDS.has(String(over.id))) {
+      setOverColumn(over.id as Column);
+    } else {
+      setOverColumn(null);
+    }
+  }
+
   function onDragEnd(event: DragEndEvent) {
     const currentActive = activeCard;
     setActiveCard(null);
+    setOverColumn(null);
 
     const { active, over } = event;
     if (!over || !currentActive) return;
@@ -192,12 +210,16 @@ export function Board({
             onShowAll={showAll}
           />
         }
+        groupingSlot={
+          <BoardGrouping value={groupBy} onChange={setGroupBy} />
+        }
       />
 
       <DndContext
         sensors={sensors}
         collisionDetection={customCollision}
         onDragStart={onDragStart}
+        onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
         <div className="flex flex-1 overflow-hidden">
@@ -222,6 +244,8 @@ export function Board({
                     : undefined
                 }
                 onCardClick={setSelectedCard}
+                isTargeted={overColumn === key && activeCard?.column_name !== key}
+                groupBy={groupBy}
               />
             ))}
           </div>

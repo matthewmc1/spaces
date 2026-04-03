@@ -11,6 +11,7 @@ interface BoardHeaderProps {
   insightsOpen: boolean;
   onToggleInsights: () => void;
   columnConfigSlot: React.ReactNode;
+  groupingSlot?: React.ReactNode;
   totalCards?: number;
   totalColumns?: number;
 }
@@ -23,6 +24,7 @@ export function BoardHeader({
   insightsOpen,
   onToggleInsights,
   columnConfigSlot,
+  groupingSlot,
   totalCards,
   totalColumns,
 }: BoardHeaderProps) {
@@ -51,6 +53,7 @@ export function BoardHeader({
           Triage
         </Button>
         {columnConfigSlot}
+        {groupingSlot}
         <Button
           variant={insightsOpen ? "secondary" : "ghost"}
           size="sm"
