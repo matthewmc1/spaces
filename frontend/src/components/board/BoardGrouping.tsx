@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Layers } from "lucide-react";
 
-export type GroupBy = "none" | "priority" | "assignee";
+export type GroupBy = "none" | "priority" | "assignee" | "dependency";
 
 interface BoardGroupingProps {
   value: GroupBy;
@@ -15,6 +15,7 @@ const options: { value: GroupBy; label: string; description: string }[] = [
   { value: "none", label: "No grouping", description: "Show all cards in columns" },
   { value: "priority", label: "Priority", description: "Group cards by P0–P3" },
   { value: "assignee", label: "Owner", description: "Group cards by assignee" },
+  { value: "dependency", label: "Dependencies", description: "Group by dependency chains" },
 ];
 
 export function BoardGrouping({ value, onChange }: BoardGroupingProps) {

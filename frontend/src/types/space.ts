@@ -1,3 +1,5 @@
+export type SpaceStatus = "on_track" | "at_risk" | "behind" | "paused";
+
 export interface Space {
   id: string;
   tenant_id: string;
@@ -10,6 +12,7 @@ export interface Space {
   path: string;
   owner_id: string;
   visibility: "public" | "private" | "restricted";
+  status: SpaceStatus;
   created_at: string;
   updated_at: string;
 }
@@ -35,4 +38,5 @@ export interface UpdateSpaceInput {
   icon?: string;
   color?: string;
   visibility?: string;
+  status?: SpaceStatus;
 }

@@ -46,6 +46,11 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, spaceID, createdBy 
 		labels = []string{}
 	}
 
+	var priority *string
+	if input.Priority != "" {
+		priority = &input.Priority
+	}
+
 	row := r.db.QueryRow(ctx, q,
 		tenantID,
 		spaceID,
@@ -55,7 +60,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, spaceID, createdBy 
 		ColumnInbox,
 		nil, // position: use default from subquery
 		input.AssigneeID,
-		input.Priority,
+		priority,
 		input.EffortEstimate,
 		input.DueDate,
 		labels,

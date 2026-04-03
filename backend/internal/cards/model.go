@@ -27,7 +27,7 @@ type Card struct {
 	ColumnName     Column     `json:"column_name"`
 	Position       float64    `json:"position"`
 	AssigneeID     *uuid.UUID `json:"assignee_id,omitempty"`
-	Priority       string     `json:"priority,omitempty"`
+	Priority       *string    `json:"priority,omitempty"`
 	EffortEstimate *int       `json:"effort_estimate,omitempty"`
 	DueDate        *time.Time `json:"due_date,omitempty"`
 	Labels         []string   `json:"labels"`

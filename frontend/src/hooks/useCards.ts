@@ -6,6 +6,7 @@ import {
 import {
   listCards,
   createCard,
+  updateCard,
   moveCard,
   deleteCard,
 } from "@/lib/api/cards";
@@ -36,6 +37,17 @@ export function useSpaceCardCounts(spaceIds: string[]) {
     },
     enabled: spaceIds.length > 0,
     staleTime: 60 * 1000,
+  });
+}
+
+export function useUpdateCard(spaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cardId, input }: { cardId: string; input: Partial<Card> }) =>
+      updateCard(cardId, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cards", spaceId] });
+    },
   });
 }
 

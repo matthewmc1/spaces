@@ -22,7 +22,7 @@ export async function apiFetch<T>(
       Authorization: `Bearer dev-token`,
       ...options.headers,
     },
-    credentials: "include",
+    mode: "cors",
   });
 
   if (!res.ok) {

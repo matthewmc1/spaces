@@ -17,7 +17,7 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
-import { useCards, useMoveCard, cardsByColumn } from "@/hooks/useCards";
+import { useCards, useMoveCard, useUpdateCard, useDeleteCard, cardsByColumn } from "@/hooks/useCards";
 import { useColumnVisibility } from "@/hooks/useColumnVisibility";
 import { BoardColumn } from "./BoardColumn";
 import { BoardCard, CardOverlay } from "./BoardCard";
@@ -69,6 +69,8 @@ export function Board({
 }: BoardProps) {
   const { data: cards, isLoading } = useCards(spaceId);
   const moveCard = useMoveCard(spaceId);
+  const updateCard = useUpdateCard(spaceId);
+  const deleteCard = useDeleteCard(spaceId);
   const { visible, toggle, showAll } = useColumnVisibility(spaceId);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [overColumn, setOverColumn] = useState<Column | null>(null);
@@ -201,6 +203,7 @@ export function Board({
         onToggleTriage={() => setTriageOpen(!triageOpen)}
         insightsOpen={insightsOpen}
         onToggleInsights={onToggleInsights}
+        onAddCard={() => setShowCreateCard(true)}
         totalCards={totalCards}
         totalColumns={totalColumns}
         columnConfigSlot={
@@ -260,13 +263,18 @@ export function Board({
 
       <CardDetailDialog
         card={selectedCard}
+        allCards={cards}
         onClose={() => setSelectedCard(null)}
+        onUpdate={(cardId, updates) =>
+          updateCard.mutate({ cardId, input: updates })
+        }
         onMove={(id, col, pos) =>
           moveCard.mutate({
             cardId: id,
             input: { column: col, position: pos },
           })
         }
+        onDelete={(cardId) => deleteCard.mutate(cardId)}
       />
 
       {showCreateCard && (

@@ -18,6 +18,7 @@ type Space struct {
 	Path          string     `json:"path"`
 	OwnerID       uuid.UUID  `json:"owner_id"`
 	Visibility    string     `json:"visibility"`
+	Status        string     `json:"status"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }
@@ -38,6 +39,7 @@ type UpdateInput struct {
 	Icon        *string `json:"icon,omitempty"`
 	Color       *string `json:"color,omitempty"`
 	Visibility  *string `json:"visibility,omitempty"`
+	Status      *string `json:"status,omitempty"`
 	Path        *string `json:"-"` // internal use only — not exposed via API
 }
 

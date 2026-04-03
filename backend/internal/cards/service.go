@@ -2,6 +2,7 @@ package cards
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -24,7 +25,12 @@ func (s *Service) Create(ctx context.Context, tenantID, spaceID, createdBy uuid.
 	if input.Title == "" {
 		return nil, domainerrors.Validation("title is required")
 	}
-	return s.repo.Create(ctx, tenantID, spaceID, createdBy, input)
+	card, err := s.repo.Create(ctx, tenantID, spaceID, createdBy, input)
+	if err != nil {
+		slog.Error("card create failed", "error", err, "input", input)
+		return nil, err
+	}
+	return card, nil
 }
 
 // GetByID retrieves a card by ID.

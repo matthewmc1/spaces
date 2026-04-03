@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { Inbox, PanelRight } from "lucide-react";
+import { Inbox, PanelRight, Plus } from "lucide-react";
 
 interface BoardHeaderProps {
   spaceName: string;
@@ -10,6 +10,7 @@ interface BoardHeaderProps {
   onToggleTriage: () => void;
   insightsOpen: boolean;
   onToggleInsights: () => void;
+  onAddCard: () => void;
   columnConfigSlot: React.ReactNode;
   groupingSlot?: React.ReactNode;
   totalCards?: number;
@@ -23,6 +24,7 @@ export function BoardHeader({
   onToggleTriage,
   insightsOpen,
   onToggleInsights,
+  onAddCard,
   columnConfigSlot,
   groupingSlot,
   totalCards,
@@ -44,6 +46,14 @@ export function BoardHeader({
         )}
       </div>
       <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          icon={<Plus className="w-4 h-4" />}
+          onClick={onAddCard}
+        >
+          Add Card
+        </Button>
+        <div className="w-px h-5 bg-neutral-200" />
         <Button
           variant={triageOpen ? "secondary" : "ghost"}
           size="sm"

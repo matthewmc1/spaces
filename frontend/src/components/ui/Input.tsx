@@ -15,15 +15,15 @@ const baseClasses = "w-full bg-white border border-neutral-200 rounded-[var(--ra
 const errorClasses = "border-danger focus:ring-red-200 focus:border-danger";
 
 export const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps | TextareaProps>(
-  ({ label, hint, error, className = "", ...props }, ref) => {
+  ({ label, hint, error, className = "", multiline, ...rest }, ref) => {
     const inputClasses = `${baseClasses} ${error ? errorClasses : ""} ${className}`;
     return (
       <div className="space-y-1">
         {label && <label className="block text-sm font-medium text-neutral-700">{label}</label>}
-        {props.multiline ? (
-          <textarea ref={ref as React.Ref<HTMLTextAreaElement>} className={inputClasses} {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)} />
+        {multiline ? (
+          <textarea ref={ref as React.Ref<HTMLTextAreaElement>} className={inputClasses} {...(rest as TextareaHTMLAttributes<HTMLTextAreaElement>)} />
         ) : (
-          <input ref={ref as React.Ref<HTMLInputElement>} className={inputClasses} {...(props as InputHTMLAttributes<HTMLInputElement>)} />
+          <input ref={ref as React.Ref<HTMLInputElement>} className={inputClasses} {...(rest as InputHTMLAttributes<HTMLInputElement>)} />
         )}
         {error && <p className="text-xs text-danger">{error}</p>}
         {hint && !error && <p className="text-xs text-neutral-400">{hint}</p>}

@@ -36,7 +36,7 @@ export function AnalyticsSidebar({ open, onClose, cards }: AnalyticsSidebarProps
 
   const bottleneckMessage = cards && cards.length > 0
     ? computeBottleneckMessage(cards)
-    : "3 cards in Review for >5 days";
+    : undefined;
 
   return (
     <aside className="w-[320px] flex-shrink-0 bg-white border-l border-neutral-200 h-full overflow-y-auto">
@@ -59,11 +59,11 @@ export function AnalyticsSidebar({ open, onClose, cards }: AnalyticsSidebarProps
       <div className="px-5 py-5 space-y-5">
         <FlowSummary cards={cards} />
         <div className="border-t border-neutral-100" />
-        <AlignmentHealth />
+        <AlignmentHealth cards={cards} />
         <div className="border-t border-neutral-100" />
         <ColumnDistribution cards={cards} />
         <div className="border-t border-neutral-100" />
-        <CycleTimeTrend />
+        <CycleTimeTrend cards={cards} />
         <div className="border-t border-neutral-100" />
         <BottleneckAlert message={bottleneckMessage} />
       </div>
