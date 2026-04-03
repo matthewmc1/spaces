@@ -2,24 +2,101 @@ import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
+function BoardPreview() {
+  const columns = [
+    { name: "Planned", color: "bg-teal-500", cards: 3 },
+    { name: "In Progress", color: "bg-amber-500", cards: 2 },
+    { name: "Review", color: "bg-orange-400", cards: 1 },
+    { name: "Done", color: "bg-emerald-500", cards: 4 },
+  ];
+
+  return (
+    <div className="mx-auto max-w-4xl mt-16 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+      <div className="bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] border border-neutral-200/60 p-6 overflow-hidden">
+        {/* Fake toolbar */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-neutral-200" />
+            <div className="w-3 h-3 rounded-full bg-neutral-200" />
+            <div className="w-3 h-3 rounded-full bg-neutral-200" />
+          </div>
+          <div className="h-5 w-32 bg-neutral-100 rounded-full" />
+          <div className="flex gap-2">
+            <div className="h-6 w-16 bg-neutral-100 rounded-[var(--radius-sm)]" />
+            <div className="h-6 w-16 bg-neutral-100 rounded-[var(--radius-sm)]" />
+          </div>
+        </div>
+        {/* Fake columns */}
+        <div className="flex gap-4">
+          {columns.map((col) => (
+            <div key={col.name} className="flex-1">
+              <div className={`h-0.5 ${col.color} rounded-full mb-3`} />
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-[family-name:var(--font-display)] text-neutral-600">
+                  {col.name}
+                </span>
+                <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-400">
+                  {col.cards}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {Array.from({ length: col.cards }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-neutral-50 rounded-[var(--radius-md)] p-3 border border-neutral-100"
+                  >
+                    <div
+                      className="h-2.5 bg-neutral-200 rounded-full mb-2"
+                      style={{ width: `${60 + Math.random() * 35}%` }}
+                    />
+                    <div
+                      className="h-2 bg-neutral-100 rounded-full"
+                      style={{ width: `${40 + Math.random() * 40}%` }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HeroSection() {
   return (
-    <section className="teal-glow py-24 px-6">
+    <section className="teal-glow py-24 px-6 overflow-hidden">
       <div className="max-w-3xl mx-auto text-center">
-        <Logo variant="full" size={48} className="justify-center mb-8 animate-fade-in-up" />
-        <h1 className="text-5xl font-[family-name:var(--font-display)] tracking-[-0.02em] text-neutral-800 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        <div className="animate-fade-in-up">
+          <Logo variant="full" size={48} className="justify-center mb-8" />
+        </div>
+        <h1
+          className="text-5xl font-[family-name:var(--font-display)] tracking-[-0.02em] text-neutral-800 animate-fade-in-up"
+          style={{ animationDelay: "0.1s" }}
+        >
           Strategic alignment, visible everywhere.
         </h1>
-        <p className="mt-4 text-lg text-neutral-500 max-w-xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          Plan, prioritize, and deliver with clarity across every team and workstream.
+        <p
+          className="mt-5 text-lg text-neutral-500 max-w-xl mx-auto leading-relaxed animate-fade-in-up"
+          style={{ animationDelay: "0.2s" }}
+        >
+          Plan, prioritize, and deliver with clarity across every team and
+          workstream. From inbox to done, with alignment at every stage.
         </p>
-        <div className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+        <div
+          className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up"
+          style={{ animationDelay: "0.3s" }}
+        >
           <Link href="/spaces">
             <Button size="lg">Get Started</Button>
           </Link>
-          <Button variant="ghost" size="lg">Learn More</Button>
+          <Button variant="secondary" size="lg">
+            Learn More
+          </Button>
         </div>
       </div>
+      <BoardPreview />
     </section>
   );
 }
