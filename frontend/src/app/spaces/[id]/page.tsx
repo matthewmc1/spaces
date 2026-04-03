@@ -19,7 +19,7 @@ export default function SpacePage({
     <div className="flex h-screen overflow-hidden bg-neutral-50">
       <Sidebar activeSpaceId={id} />
 
-      <main className="flex flex-col flex-1 min-w-0 overflow-hidden p-6 animate-fade-in-up">
+      <main className="relative flex flex-col flex-1 min-w-0 overflow-hidden p-6 animate-fade-in-up">
         <Board
           spaceId={id}
           spaceName={space?.name}

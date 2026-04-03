@@ -11,6 +11,8 @@ interface BoardHeaderProps {
   insightsOpen: boolean;
   onToggleInsights: () => void;
   columnConfigSlot: React.ReactNode;
+  totalCards?: number;
+  totalColumns?: number;
 }
 
 export function BoardHeader({
@@ -21,16 +23,25 @@ export function BoardHeader({
   insightsOpen,
   onToggleInsights,
   columnConfigSlot,
+  totalCards,
+  totalColumns,
 }: BoardHeaderProps) {
   return (
-    <div className="flex items-center justify-between pb-4">
+    <div className="flex items-start justify-between pb-4 border-b border-neutral-200/60 mb-5">
       <div>
-        <h1 className="text-xl font-semibold text-neutral-800">{spaceName}</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-neutral-800 tracking-[-0.02em]">
+          {spaceName}
+        </h1>
         {spaceDescription && (
-          <p className="text-sm text-neutral-500 mt-0.5">{spaceDescription}</p>
+          <p className="text-sm text-neutral-500 mt-1">{spaceDescription}</p>
+        )}
+        {totalCards != null && totalColumns != null && (
+          <p className="font-[family-name:var(--font-mono)] text-[11px] text-neutral-400 mt-1.5 tabular-nums">
+            {totalCards} items across {totalColumns} columns
+          </p>
         )}
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <Button
           variant={triageOpen ? "secondary" : "ghost"}
           size="sm"

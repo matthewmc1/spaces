@@ -55,6 +55,9 @@ export function Board({
 
   const visibleColumns = COLUMNS.filter((col) => visible.includes(col.key));
 
+  const totalCards = cards?.length ?? 0;
+  const totalColumns = visibleColumns.length;
+
   function onDragStart(event: DragStartEvent) {
     const card = event.active.data.current?.card as Card | undefined;
     if (card) setActiveCard(card);
@@ -118,7 +121,7 @@ export function Board({
     return (
       <div className="space-y-4">
         <Skeleton variant="rectangle" height="40px" width="300px" />
-        <div className="flex gap-4">
+        <div className="flex gap-5">
           {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} variant="rectangle" width="280px" height="200px" />
           ))}
@@ -136,6 +139,8 @@ export function Board({
         onToggleTriage={() => setTriageOpen(!triageOpen)}
         insightsOpen={insightsOpen}
         onToggleInsights={onToggleInsights}
+        totalCards={totalCards}
+        totalColumns={totalColumns}
         columnConfigSlot={
           <ColumnConfigDropdown
             visible={visible}
@@ -159,7 +164,7 @@ export function Board({
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
         >
-          <div className="board-surface flex gap-4 overflow-x-auto flex-1 pb-4">
+          <div className="board-surface relative flex gap-5 overflow-x-auto flex-1 pb-4">
             {visibleColumns.map(({ key, label }) => (
               <BoardColumn
                 key={key}
