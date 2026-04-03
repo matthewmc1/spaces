@@ -41,7 +41,7 @@ export function BoardCard({ card }: BoardCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`overflow-hidden bg-white border rounded-[var(--radius-md)] transition-all select-none ${
+      className={`card-lift overflow-hidden bg-white border rounded-[var(--radius-md)] transition-all select-none ${
         isDragging
           ? "shadow-[var(--shadow-xl)] opacity-90 border-neutral-300"
           : "shadow-[var(--shadow-sm)] border-neutral-200 hover:shadow-[var(--shadow-md)] hover:border-neutral-300"

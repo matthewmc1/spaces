@@ -16,7 +16,7 @@ function LogoMark({ size = 32, className = "" }: { size?: number; className?: st
 
 function LogoText({ className = "" }: { className?: string }) {
   return (
-    <span className={`font-semibold tracking-[0.02em] text-neutral-800 ${className}`}>
+    <span className={`font-[family-name:var(--font-display)] tracking-[-0.02em] text-neutral-800 ${className}`}>
       Spaces
     </span>
   );

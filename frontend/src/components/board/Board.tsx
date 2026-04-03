@@ -159,7 +159,7 @@ export function Board({
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
         >
-          <div className="flex gap-4 overflow-x-auto flex-1 pb-4">
+          <div className="board-surface flex gap-4 overflow-x-auto flex-1 pb-4">
             {visibleColumns.map(({ key, label }) => (
               <BoardColumn
                 key={key}
