@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Calendar, User } from "lucide-react";
+import { Calendar, CheckSquare, User } from "lucide-react";
 import type { Card } from "@/types/card";
 
 interface BoardCardProps {
@@ -48,10 +48,11 @@ export function BoardCard({ card, onClick }: BoardCardProps) {
     transition,
   };
 
+  const isDone = card.column_name === "done";
   const priority = card.priority && priorityStyles[card.priority] ? card.priority : null;
-  const borderClass = priority ? priorityStyles[priority].border : "border-l-transparent";
+  const borderClass = isDone ? "border-l-emerald-400" : (priority ? priorityStyles[priority].border : "border-l-transparent");
   const daysInColumn = getDaysInColumn(card.moved_at);
-  const agingClass = card.column_name !== "done" ? getAgingClass(daysInColumn) : "";
+  const agingClass = !isDone ? getAgingClass(daysInColumn) : "";
 
   return (
     <div
@@ -64,7 +65,7 @@ export function BoardCard({ card, onClick }: BoardCardProps) {
         // So if onClick fires, it was a click not a drag
         if (!isDragging) onClick?.(card);
       }}
-      className={`${agingClass} bg-white border border-neutral-200/60 border-l-2 ${borderClass} rounded-[var(--radius-md)] cursor-grab active:cursor-grabbing select-none transition-shadow ${
+      className={`${agingClass} ${isDone ? "bg-neutral-50/70" : "bg-white"} border border-neutral-200/60 border-l-2 ${borderClass} rounded-[var(--radius-md)] cursor-grab active:cursor-grabbing select-none transition-shadow ${
         isDragging
           ? "shadow-[var(--shadow-xl)] opacity-90 z-50"
           : "shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:border-neutral-300/80"
@@ -72,23 +73,23 @@ export function BoardCard({ card, onClick }: BoardCardProps) {
     >
       <div className="p-2.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-[14px] font-medium text-neutral-800 leading-snug flex-1">
+          <p className={`text-[14px] font-medium leading-snug flex-1 ${isDone ? "line-through text-neutral-400" : "text-neutral-800"}`}>
             {card.title}
           </p>
-          {daysInColumn >= 3 && card.column_name !== "done" && (
+          {daysInColumn >= 3 && !isDone && (
             <span className="text-[10px] font-[family-name:var(--font-mono)] text-amber-500 whitespace-nowrap">
               {daysInColumn}d
             </span>
           )}
         </div>
         {card.description && (
-          <p className="mt-1 text-[13px] text-neutral-500 line-clamp-2 leading-relaxed">
+          <p className={`mt-1 text-[13px] line-clamp-2 leading-relaxed ${isDone ? "line-through text-neutral-300" : "text-neutral-500"}`}>
             {card.description}
           </p>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {priority && (
-            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${priorityStyles[priority].className}`}>
+            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${priorityStyles[priority].className} ${isDone ? "opacity-50" : ""}`}>
               {priorityStyles[priority].label}
             </span>
           )}
@@ -103,6 +104,11 @@ export function BoardCard({ card, onClick }: BoardCardProps) {
                 <User size={10} className="text-primary-600" />
               </span>
             )}
+            {/* Subtask count placeholder - will be wired to real data */}
+            <span className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
+              <CheckSquare size={10} />
+              <span className="font-[family-name:var(--font-mono)]">0/0</span>
+            </span>
             {card.due_date && (
               <span className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
                 <Calendar size={10} />

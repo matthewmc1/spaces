@@ -226,7 +226,10 @@ export function Board({
             ))}
           </div>
         </div>
-        <DragOverlay dropAnimation={null}>
+        <DragOverlay dropAnimation={{
+          duration: 200,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        }}>
           {activeCard ? <BoardCard card={activeCard} /> : null}
         </DragOverlay>
       </DndContext>

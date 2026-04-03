@@ -57,7 +57,7 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick }: Bo
 
       {/* Cards */}
       <div
-        className={`flex flex-col gap-2 px-2.5 py-2.5 overflow-y-auto min-h-[160px] flex-1 ${
+        className={`flex flex-col gap-2 px-2.5 py-2.5 overflow-y-auto min-h-[160px] flex-1 transition-all duration-200 ${
           cards.length === 0
             ? "items-center justify-center"
             : ""

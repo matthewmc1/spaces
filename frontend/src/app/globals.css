@@ -123,3 +123,51 @@ body {
   background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' y1='30' x2='45' y2='28' stroke='%23b45309' stroke-width='0.3' opacity='0.15'/%3E%3Cline x1='55' y1='70' x2='100' y2='65' stroke='%23b45309' stroke-width='0.3' opacity='0.12'/%3E%3Cline x1='20' y1='85' x2='80' y2='82' stroke='%23b45309' stroke-width='0.2' opacity='0.1'/%3E%3C/svg%3E");
   pointer-events: none;
 }
+
+/* Smooth card movement transitions */
+.card-move-enter {
+  animation: cardSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Column highlight pulse when card enters */
+@keyframes columnPulse {
+  0% { box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0); }
+  50% { box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.15); }
+  100% { box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0); }
+}
+.column-received {
+  animation: columnPulse 0.6s ease-out;
+}
+
+/* Done card completion effect */
+.card-done {
+  position: relative;
+}
+.card-done::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), transparent);
+  pointer-events: none;
+}
+
+/* Motivational message animation */
+@keyframes fadeRotate {
+  0%, 15% { opacity: 1; transform: translateY(0); }
+  20%, 25% { opacity: 0; transform: translateY(-8px); }
+  30%, 100% { opacity: 0; transform: translateY(8px); }
+}
