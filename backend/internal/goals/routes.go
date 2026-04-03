@@ -2,14 +2,21 @@ package goals
 
 import "net/http"
 
-func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.Handler) http.Handler) {
-	wrap := func(fn http.HandlerFunc) http.Handler {
+func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.Handler) http.Handler, requireMember, requireAdmin func(http.Handler) http.Handler) {
+	read := func(fn http.HandlerFunc) http.Handler {
 		return authMW(tenantMW(fn))
 	}
-	mux.Handle("GET /spaces/{id}/goals", wrap(h.HandleListGoals))
-	mux.Handle("POST /spaces/{id}/goals", wrap(h.HandleCreateGoal))
-	mux.Handle("PUT /goals/{id}", wrap(h.HandleUpdateGoal))
-	mux.Handle("DELETE /goals/{id}", wrap(h.HandleDeleteGoal))
-	mux.Handle("POST /goals/{id}/links", wrap(h.HandleCreateLink))
-	mux.Handle("DELETE /goal-links/{id}", wrap(h.HandleDeleteLink))
+	write := func(fn http.HandlerFunc) http.Handler {
+		return authMW(tenantMW(requireMember(fn)))
+	}
+	admin := func(fn http.HandlerFunc) http.Handler {
+		return authMW(tenantMW(requireAdmin(fn)))
+	}
+
+	mux.Handle("GET /spaces/{id}/goals", read(h.HandleListGoals))
+	mux.Handle("POST /spaces/{id}/goals", write(h.HandleCreateGoal))
+	mux.Handle("PUT /goals/{id}", write(h.HandleUpdateGoal))
+	mux.Handle("DELETE /goals/{id}", admin(h.HandleDeleteGoal))
+	mux.Handle("POST /goals/{id}/links", write(h.HandleCreateLink))
+	mux.Handle("DELETE /goal-links/{id}", admin(h.HandleDeleteLink))
 }

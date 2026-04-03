@@ -17,6 +17,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/config"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/database"
+	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
 )
@@ -51,6 +52,9 @@ func main() {
 		)
 	}
 
+	rbacRepo := rbac.NewRepository(pool)
+	rbacSvc := rbac.NewService(rbacRepo)
+
 	spaceRepo := spaces.NewRepository(pool)
 	cardRepo := cards.NewRepository(pool)
 	goalRepo := goals.NewRepository(pool)
@@ -69,6 +73,7 @@ func main() {
 		CORSOrigin:     cfg.CORSOrigin,
 		AuthMiddleware: auth.NewMiddleware(tokenVerifier),
 		TenantMW:       tenant.NewMiddleware(),
+		RBACService:    rbacSvc,
 		SpaceHandler:   spaceHandler,
 		CardHandler:    cardHandler,
 		GoalHandler:    goalHandler,

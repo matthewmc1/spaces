@@ -8,6 +8,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/goals"
 	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/middleware"
+	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
 )
@@ -16,6 +17,7 @@ type Config struct {
 	CORSOrigin     string
 	AuthMiddleware *auth.Middleware
 	TenantMW       *tenant.Middleware
+	RBACService    *rbac.Service
 	SpaceHandler   *spaces.Handler
 	CardHandler    *cards.Handler
 	GoalHandler    *goals.Handler
@@ -32,10 +34,12 @@ func NewRouter(cfg Config) http.Handler {
 
 	authMW := cfg.AuthMiddleware.Handler
 	tenantMW := cfg.TenantMW.Handler
+	requireMember := rbac.RequireRole(cfg.RBACService, "member")
+	requireAdmin := rbac.RequireRole(cfg.RBACService, "admin")
 
-	spaces.RegisterRoutes(mux, cfg.SpaceHandler, authMW, tenantMW)
-	cards.RegisterRoutes(mux, cfg.CardHandler, authMW, tenantMW)
-	goals.RegisterRoutes(mux, cfg.GoalHandler, authMW, tenantMW)
+	spaces.RegisterRoutes(mux, cfg.SpaceHandler, authMW, tenantMW, requireMember, requireAdmin)
+	cards.RegisterRoutes(mux, cfg.CardHandler, authMW, tenantMW, requireMember, requireAdmin)
+	goals.RegisterRoutes(mux, cfg.GoalHandler, authMW, tenantMW, requireMember, requireAdmin)
 	metrics.RegisterRoutes(mux, cfg.MetricsHandler, authMW, tenantMW)
 
 	var handler http.Handler = mux

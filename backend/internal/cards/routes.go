@@ -3,13 +3,20 @@ package cards
 import "net/http"
 
 // RegisterRoutes registers all card routes on the given mux, wrapped with auth and tenant middleware.
-func RegisterRoutes(mux *http.ServeMux, h *Handler, authMiddleware, tenantMiddleware func(http.Handler) http.Handler) {
-	wrap := func(handler http.HandlerFunc) http.Handler {
-		return authMiddleware(tenantMiddleware(handler))
+func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.Handler) http.Handler, requireMember, requireAdmin func(http.Handler) http.Handler) {
+	read := func(fn http.HandlerFunc) http.Handler {
+		return authMW(tenantMW(fn))
 	}
-	mux.Handle("GET /spaces/{id}/cards", wrap(h.HandleListCards))
-	mux.Handle("POST /spaces/{id}/cards", wrap(h.HandleCreateCard))
-	mux.Handle("PUT /cards/{id}", wrap(h.HandleUpdateCard))
-	mux.Handle("PATCH /cards/{id}/move", wrap(h.HandleMoveCard))
-	mux.Handle("DELETE /cards/{id}", wrap(h.HandleDeleteCard))
+	write := func(fn http.HandlerFunc) http.Handler {
+		return authMW(tenantMW(requireMember(fn)))
+	}
+	admin := func(fn http.HandlerFunc) http.Handler {
+		return authMW(tenantMW(requireAdmin(fn)))
+	}
+
+	mux.Handle("GET /spaces/{id}/cards", read(h.HandleListCards))
+	mux.Handle("POST /spaces/{id}/cards", write(h.HandleCreateCard))
+	mux.Handle("PUT /cards/{id}", write(h.HandleUpdateCard))
+	mux.Handle("PATCH /cards/{id}/move", write(h.HandleMoveCard))
+	mux.Handle("DELETE /cards/{id}", admin(h.HandleDeleteCard))
 }
