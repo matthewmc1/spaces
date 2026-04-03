@@ -28,6 +28,7 @@ import { TriageDrawer } from "./TriageDrawer";
 import { CreateCardDialog } from "./CreateCardDialog";
 import { CardDetailDialog } from "./CardDetailDialog";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { GoalsList } from "@/components/goals/GoalsList";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((c) => c.key));
 
@@ -77,6 +78,7 @@ export function Board({
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [showCreateCard, setShowCreateCard] = useState(false);
   const [triageOpen, setTriageOpen] = useState(false);
+  const [goalsOpen, setGoalsOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>("none");
 
   const sensors = useSensors(
@@ -203,6 +205,8 @@ export function Board({
         onToggleTriage={() => setTriageOpen(!triageOpen)}
         insightsOpen={insightsOpen}
         onToggleInsights={onToggleInsights}
+        goalsOpen={goalsOpen}
+        onToggleGoals={() => setGoalsOpen(!goalsOpen)}
         onAddCard={() => setShowCreateCard(true)}
         totalCards={totalCards}
         totalColumns={totalColumns}
@@ -252,6 +256,12 @@ export function Board({
               />
             ))}
           </div>
+
+          <GoalsList
+            spaceId={spaceId}
+            open={goalsOpen}
+            onClose={() => setGoalsOpen(false)}
+          />
         </div>
         <DragOverlay dropAnimation={{
           duration: 200,

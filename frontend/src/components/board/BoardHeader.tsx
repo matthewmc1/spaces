@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { Inbox, PanelRight, Plus } from "lucide-react";
+import { Inbox, PanelRight, Plus, Target } from "lucide-react";
 
 interface BoardHeaderProps {
   spaceName: string;
@@ -10,6 +10,8 @@ interface BoardHeaderProps {
   onToggleTriage: () => void;
   insightsOpen: boolean;
   onToggleInsights: () => void;
+  goalsOpen: boolean;
+  onToggleGoals: () => void;
   onAddCard: () => void;
   columnConfigSlot: React.ReactNode;
   groupingSlot?: React.ReactNode;
@@ -24,6 +26,8 @@ export function BoardHeader({
   onToggleTriage,
   insightsOpen,
   onToggleInsights,
+  goalsOpen,
+  onToggleGoals,
   onAddCard,
   columnConfigSlot,
   groupingSlot,
@@ -64,6 +68,14 @@ export function BoardHeader({
         </Button>
         {columnConfigSlot}
         {groupingSlot}
+        <Button
+          variant={goalsOpen ? "secondary" : "ghost"}
+          size="sm"
+          icon={<Target className="w-4 h-4" />}
+          onClick={onToggleGoals}
+        >
+          Goals
+        </Button>
         <Button
           variant={insightsOpen ? "secondary" : "ghost"}
           size="sm"
