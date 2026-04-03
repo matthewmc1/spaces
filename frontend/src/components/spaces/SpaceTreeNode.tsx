@@ -31,13 +31,15 @@ export function SpaceTreeNode({
     <div>
       <div
         className={`flex items-center gap-1 py-1 pr-2 rounded cursor-pointer group ${
-          isActive ? "bg-blue-100 text-blue-700" : "hover:bg-gray-100"
+          isActive
+            ? "bg-primary-100 text-primary-700"
+            : "hover:bg-neutral-100 text-neutral-700"
         }`}
         style={{ paddingLeft: `${indentPx}px` }}
       >
         <button
           onClick={() => setExpanded((prev) => !prev)}
-          className={`flex-shrink-0 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 ${
+          className={`flex-shrink-0 w-4 h-4 flex items-center justify-center text-neutral-400 hover:text-neutral-600 ${
             hasChildren ? "visible" : "invisible"
           }`}
           aria-label={expanded ? "Collapse" : "Expand"}
@@ -55,7 +57,7 @@ export function SpaceTreeNode({
           <Folder
             size={14}
             className="flex-shrink-0"
-            style={{ color: space.color ?? "#6b7280" }}
+            style={{ color: space.color ?? "#94a3b8" }}
           />
           <span className="truncate">{space.name}</span>
         </Link>

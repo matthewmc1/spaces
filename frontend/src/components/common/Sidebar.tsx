@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard } from "lucide-react";
+import { Settings } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { SpaceTree } from "@/components/spaces/SpaceTree";
 
 interface SidebarProps {
@@ -10,18 +11,20 @@ interface SidebarProps {
 
 export function Sidebar({ activeSpaceId }: SidebarProps) {
   return (
-    <aside className="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col overflow-y-auto z-40">
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-100">
-        <Link
-          href="/spaces"
-          className="flex items-center gap-2 text-gray-800 hover:text-blue-600 transition-colors"
-        >
-          <LayoutDashboard size={20} />
-          <span className="text-base font-semibold">Spaces</span>
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-neutral-100 border-r border-neutral-200 flex flex-col z-40">
+      <div className="p-4 border-b border-neutral-200">
+        <Link href="/spaces">
+          <Logo variant="full" size={24} />
         </Link>
       </div>
-      <div className="flex-1 overflow-y-auto py-2">
+      <div className="flex-1 overflow-y-auto">
         <SpaceTree activeSpaceId={activeSpaceId} />
+      </div>
+      <div className="p-3 border-t border-neutral-200">
+        <button className="flex items-center gap-2 w-full px-3 py-2 rounded text-sm text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 transition-colors">
+          <Settings size={16} />
+          <span>Settings</span>
+        </button>
       </div>
     </aside>
   );
