@@ -18,6 +18,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/config"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/database"
 	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
+	"github.com/matthewmcgibbon/spaces/backend/internal/settings"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
 )
@@ -58,26 +59,30 @@ func main() {
 	spaceRepo := spaces.NewRepository(pool)
 	cardRepo := cards.NewRepository(pool)
 	goalRepo := goals.NewRepository(pool)
+	settingsRepo := settings.NewRepository(pool)
 
 	spaceSvc := spaces.NewService(spaceRepo)
 	cardSvc := cards.NewService(cardRepo)
 	goalSvc := goals.NewService(goalRepo)
 	metricsSvc := metrics.NewService(pool)
+	settingsSvc := settings.NewService(settingsRepo)
 
 	spaceHandler := spaces.NewHandler(spaceSvc)
 	cardHandler := cards.NewHandler(cardSvc)
 	goalHandler := goals.NewHandler(goalSvc)
 	metricsHandler := metrics.NewHandler(metricsSvc)
+	settingsHandler := settings.NewHandler(settingsSvc)
 
 	router := api.NewRouter(api.Config{
-		CORSOrigin:     cfg.CORSOrigin,
-		AuthMiddleware: auth.NewMiddleware(tokenVerifier),
-		TenantMW:       tenant.NewMiddleware(),
-		RBACService:    rbacSvc,
-		SpaceHandler:   spaceHandler,
-		CardHandler:    cardHandler,
-		GoalHandler:    goalHandler,
-		MetricsHandler: metricsHandler,
+		CORSOrigin:      cfg.CORSOrigin,
+		AuthMiddleware:  auth.NewMiddleware(tokenVerifier),
+		TenantMW:        tenant.NewMiddleware(),
+		RBACService:     rbacSvc,
+		SpaceHandler:    spaceHandler,
+		CardHandler:     cardHandler,
+		GoalHandler:     goalHandler,
+		MetricsHandler:  metricsHandler,
+		SettingsHandler: settingsHandler,
 	})
 
 	srv := &http.Server{

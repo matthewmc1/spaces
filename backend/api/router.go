@@ -9,19 +9,21 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/middleware"
 	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
+	"github.com/matthewmcgibbon/spaces/backend/internal/settings"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
 )
 
 type Config struct {
-	CORSOrigin     string
-	AuthMiddleware *auth.Middleware
-	TenantMW       *tenant.Middleware
-	RBACService    *rbac.Service
-	SpaceHandler   *spaces.Handler
-	CardHandler    *cards.Handler
-	GoalHandler    *goals.Handler
-	MetricsHandler *metrics.Handler
+	CORSOrigin      string
+	AuthMiddleware  *auth.Middleware
+	TenantMW        *tenant.Middleware
+	RBACService     *rbac.Service
+	SpaceHandler    *spaces.Handler
+	CardHandler     *cards.Handler
+	GoalHandler     *goals.Handler
+	MetricsHandler  *metrics.Handler
+	SettingsHandler *settings.Handler
 }
 
 func NewRouter(cfg Config) http.Handler {
@@ -41,6 +43,7 @@ func NewRouter(cfg Config) http.Handler {
 	cards.RegisterRoutes(mux, cfg.CardHandler, authMW, tenantMW, requireMember, requireAdmin)
 	goals.RegisterRoutes(mux, cfg.GoalHandler, authMW, tenantMW, requireMember, requireAdmin)
 	metrics.RegisterRoutes(mux, cfg.MetricsHandler, authMW, tenantMW)
+	settings.RegisterRoutes(mux, cfg.SettingsHandler, authMW, tenantMW)
 
 	var handler http.Handler = mux
 	handler = middleware.Logging(handler)
