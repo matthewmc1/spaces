@@ -47,7 +47,7 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
       <div className="mx-5 border-t border-neutral-100" />
       <div className="p-3 space-y-0.5">
         <SidebarLink href="#" icon={<HelpCircle size={14} />} label="Help & Feedback" />
-        <SidebarLink href="#" icon={<Settings size={14} />} label="Settings" />
+        <SidebarLink href="/settings" icon={<Settings size={14} />} label="Settings" />
       </div>
     </aside>
   );
