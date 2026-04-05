@@ -3,6 +3,7 @@ import { Instrument_Serif, DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/common/QueryProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkTokenBridge } from "@/components/common/ClerkTokenBridge";
 
 const instrumentSerif = Instrument_Serif({
   weight: "400",
@@ -35,10 +36,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/sign-in">
       <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
         <body className="antialiased">
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <ClerkTokenBridge />
+            {children}
+          </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Settings, LayoutDashboard, Zap, HelpCircle } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { SpaceTree } from "@/components/spaces/SpaceTree";
+import { UserButton } from "@clerk/nextjs";
 
 interface SidebarProps {
   activeSpaceId?: string;
@@ -48,6 +49,9 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
       <div className="p-3 space-y-0.5">
         <SidebarLink href="#" icon={<HelpCircle size={14} />} label="Help & Feedback" />
         <SidebarLink href="/settings" icon={<Settings size={14} />} label="Settings" />
+        <div className="pt-1 px-2.5">
+          <UserButton />
+        </div>
       </div>
     </aside>
   );
