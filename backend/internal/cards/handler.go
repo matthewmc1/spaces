@@ -123,7 +123,12 @@ func (h *Handler) HandleUpdateCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	card, err := h.svc.Update(r.Context(), tenantID, cardID, input)
+	var actorID uuid.UUID
+	if claims, err := auth.FromContext(r.Context()); err == nil {
+		actorID = claims.UserID
+	}
+
+	card, err := h.svc.Update(r.Context(), tenantID, cardID, actorID, input)
 	if err != nil {
 		respond.Error(w, err)
 		return
@@ -152,7 +157,12 @@ func (h *Handler) HandleMoveCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	card, err := h.svc.Move(r.Context(), tenantID, cardID, input)
+	var actorID uuid.UUID
+	if claims, err := auth.FromContext(r.Context()); err == nil {
+		actorID = claims.UserID
+	}
+
+	card, err := h.svc.Move(r.Context(), tenantID, cardID, actorID, input)
 	if err != nil {
 		respond.Error(w, err)
 		return
@@ -175,7 +185,12 @@ func (h *Handler) HandleDeleteCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.svc.Delete(r.Context(), tenantID, cardID); err != nil {
+	var actorID uuid.UUID
+	if claims, err := auth.FromContext(r.Context()); err == nil {
+		actorID = claims.UserID
+	}
+
+	if err := h.svc.Delete(r.Context(), tenantID, cardID, actorID); err != nil {
 		respond.Error(w, err)
 		return
 	}

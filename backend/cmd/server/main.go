@@ -18,7 +18,9 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/config"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/database"
+	"github.com/matthewmcgibbon/spaces/backend/internal/platform/redis"
 	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
+	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
 	"github.com/matthewmcgibbon/spaces/backend/internal/settings"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
@@ -43,6 +45,16 @@ func main() {
 	}
 	defer pool.Close()
 
+	redisClient, err := redis.Connect(ctx, cfg.RedisURL)
+	if err != nil {
+		slog.Error("failed to connect to redis", "error", err)
+		os.Exit(1)
+	}
+	defer redisClient.Close()
+
+	bus := realtime.NewBus(redisClient)
+	hub := realtime.NewHub(bus)
+
 	var tokenVerifier auth.TokenVerifier
 	if cfg.ClerkSecretKey != "" {
 		tokenVerifier = auth.NewClerkVerifier()
@@ -53,6 +65,8 @@ func main() {
 			uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 		)
 	}
+
+	realtimeHandler := realtime.NewHandler(hub, tokenVerifier, cfg.CORSOrigin)
 
 	rbacRepo := rbac.NewRepository(pool)
 	rbacSvc := rbac.NewService(rbacRepo)
@@ -68,9 +82,9 @@ func main() {
 	settingsRepo := settings.NewRepository(pool)
 	integrationsRepo := integrations.NewRepository(pool)
 
-	spaceSvc := spaces.NewService(spaceRepo)
-	cardSvc := cards.NewService(cardRepo)
-	goalSvc := goals.NewService(goalRepo)
+	spaceSvc := spaces.NewService(spaceRepo, bus)
+	cardSvc := cards.NewService(cardRepo, bus)
+	goalSvc := goals.NewService(goalRepo, bus)
 	metricsSvc := metrics.NewService(pool)
 	settingsSvc := settings.NewService(settingsRepo)
 	integrationsSvc := integrations.NewService(integrationsRepo)
@@ -83,18 +97,19 @@ func main() {
 	integrationsHandler := integrations.NewHandler(integrationsSvc)
 
 	router := api.NewRouter(api.Config{
-		CORSOrigin:      cfg.CORSOrigin,
-		AuthMiddleware:  auth.NewMiddleware(tokenVerifier),
-		TenantMW:        tenant.NewMiddleware(),
-		RBACService:     rbacSvc,
-		RBACHandler:     rbacHandler,
-		AuthHandler:     authHandler,
-		SpaceHandler:    spaceHandler,
-		CardHandler:     cardHandler,
+		CORSOrigin:          cfg.CORSOrigin,
+		AuthMiddleware:      auth.NewMiddleware(tokenVerifier),
+		TenantMW:            tenant.NewMiddleware(),
+		RBACService:         rbacSvc,
+		RBACHandler:         rbacHandler,
+		AuthHandler:         authHandler,
+		SpaceHandler:        spaceHandler,
+		CardHandler:         cardHandler,
 		GoalHandler:         goalHandler,
 		MetricsHandler:      metricsHandler,
 		SettingsHandler:     settingsHandler,
 		IntegrationsHandler: integrationsHandler,
+		RealtimeHandler:     realtimeHandler,
 	})
 
 	srv := &http.Server{

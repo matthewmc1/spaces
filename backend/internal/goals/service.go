@@ -6,16 +6,19 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/errors"
+	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
 )
 
 // Service provides business logic for the goals domain.
 type Service struct {
 	repo Repository
+	bus  *realtime.Bus
 }
 
 // NewService creates a new Service with the given Repository.
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+// bus may be nil — event publishing is skipped when it is.
+func NewService(repo Repository, bus *realtime.Bus) *Service {
+	return &Service{repo: repo, bus: bus}
 }
 
 // Create validates input and creates a new goal.
@@ -23,7 +26,14 @@ func (s *Service) Create(ctx context.Context, tenantID, spaceID, createdBy uuid.
 	if input.Title == "" {
 		return nil, errors.Validation("title is required")
 	}
-	return s.repo.Create(ctx, tenantID, spaceID, createdBy, input)
+	goal, err := s.repo.Create(ctx, tenantID, spaceID, createdBy, input)
+	if err != nil {
+		return nil, err
+	}
+	if s.bus != nil && goal != nil {
+		_ = s.bus.Publish(ctx, goal.TenantID, goal.SpaceID, createdBy, realtime.EventGoalCreated, goal)
+	}
+	return goal, nil
 }
 
 // GetByID retrieves a goal by ID.
@@ -32,7 +42,7 @@ func (s *Service) GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Goal, e
 }
 
 // Update validates input and updates an existing goal.
-func (s *Service) Update(ctx context.Context, tenantID, id uuid.UUID, input UpdateInput) (*Goal, error) {
+func (s *Service) Update(ctx context.Context, tenantID, id, actorID uuid.UUID, input UpdateInput) (*Goal, error) {
 	if input.Status != nil {
 		switch *input.Status {
 		case "active", "achieved", "abandoned":
@@ -41,12 +51,28 @@ func (s *Service) Update(ctx context.Context, tenantID, id uuid.UUID, input Upda
 			return nil, errors.Validation("status must be one of: active, achieved, abandoned")
 		}
 	}
-	return s.repo.Update(ctx, tenantID, id, input)
+	goal, err := s.repo.Update(ctx, tenantID, id, input)
+	if err != nil {
+		return nil, err
+	}
+	if s.bus != nil && goal != nil {
+		_ = s.bus.Publish(ctx, goal.TenantID, goal.SpaceID, actorID, realtime.EventGoalUpdated, goal)
+	}
+	return goal, nil
 }
 
 // Delete removes a goal by ID.
-func (s *Service) Delete(ctx context.Context, tenantID, id uuid.UUID) error {
-	return s.repo.Delete(ctx, tenantID, id)
+func (s *Service) Delete(ctx context.Context, tenantID, id, actorID uuid.UUID) error {
+	// Fetch first to capture spaceID for the event channel before deleting.
+	goal, _ := s.repo.GetByID(ctx, tenantID, id)
+
+	if err := s.repo.Delete(ctx, tenantID, id); err != nil {
+		return err
+	}
+	if s.bus != nil && goal != nil {
+		_ = s.bus.Publish(ctx, goal.TenantID, goal.SpaceID, actorID, realtime.EventGoalDeleted, map[string]any{"id": id})
+	}
+	return nil
 }
 
 // ListBySpace returns all goals for a given space.

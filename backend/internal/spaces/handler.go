@@ -133,7 +133,12 @@ func (h *Handler) HandleUpdateSpace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	space, err := h.svc.Update(r.Context(), tenantID, id, input)
+	var actorID uuid.UUID
+	if claims, err := auth.FromContext(r.Context()); err == nil {
+		actorID = claims.UserID
+	}
+
+	space, err := h.svc.Update(r.Context(), tenantID, id, actorID, input)
 	if err != nil {
 		respond.Error(w, err)
 		return

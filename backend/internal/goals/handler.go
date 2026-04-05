@@ -103,7 +103,12 @@ func (h *Handler) HandleUpdateGoal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	goal, err := h.svc.Update(r.Context(), tenantID, goalID, input)
+	var actorID uuid.UUID
+	if claims, err := auth.FromContext(r.Context()); err == nil {
+		actorID = claims.UserID
+	}
+
+	goal, err := h.svc.Update(r.Context(), tenantID, goalID, actorID, input)
 	if err != nil {
 		respond.Error(w, err)
 		return
@@ -126,7 +131,12 @@ func (h *Handler) HandleDeleteGoal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.svc.Delete(r.Context(), tenantID, goalID); err != nil {
+	var actorID uuid.UUID
+	if claims, err := auth.FromContext(r.Context()); err == nil {
+		actorID = claims.UserID
+	}
+
+	if err := h.svc.Delete(r.Context(), tenantID, goalID, actorID); err != nil {
 		respond.Error(w, err)
 		return
 	}

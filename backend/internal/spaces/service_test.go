@@ -72,7 +72,7 @@ func (m *mockRepository) GetSubtree(ctx context.Context, tenantID uuid.UUID, roo
 
 func TestService_Create_RootSpace(t *testing.T) {
 	repo := &mockRepository{}
-	svc := spaces.NewService(repo)
+	svc := spaces.NewService(repo, nil)
 
 	tenantID := uuid.New()
 	ownerID := uuid.New()
@@ -107,7 +107,7 @@ func TestService_Create_RootSpace(t *testing.T) {
 
 func TestService_Create_NestedSpace(t *testing.T) {
 	repo := &mockRepository{}
-	svc := spaces.NewService(repo)
+	svc := spaces.NewService(repo, nil)
 
 	tenantID := uuid.New()
 	ownerID := uuid.New()
@@ -170,7 +170,7 @@ func TestService_Create_NestedSpace(t *testing.T) {
 
 func TestService_Create_MissingName(t *testing.T) {
 	repo := &mockRepository{}
-	svc := spaces.NewService(repo)
+	svc := spaces.NewService(repo, nil)
 
 	tenantID := uuid.New()
 	ownerID := uuid.New()
@@ -189,7 +189,7 @@ func TestService_Create_MissingName(t *testing.T) {
 
 func TestService_Create_MissingSlug(t *testing.T) {
 	repo := &mockRepository{}
-	svc := spaces.NewService(repo)
+	svc := spaces.NewService(repo, nil)
 
 	tenantID := uuid.New()
 	ownerID := uuid.New()
