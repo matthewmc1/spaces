@@ -12,6 +12,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/middleware"
 	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
 	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
+	"github.com/matthewmcgibbon/spaces/backend/internal/rollup"
 	"github.com/matthewmcgibbon/spaces/backend/internal/settings"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
@@ -32,6 +33,7 @@ type Config struct {
 	IntegrationsHandler *integrations.Handler
 	RealtimeHandler     *realtime.Handler
 	ProgrammesHandler   *programmes.Handler
+	RollupHandler       *rollup.Handler
 }
 
 func NewRouter(cfg Config) http.Handler {
@@ -57,6 +59,7 @@ func NewRouter(cfg Config) http.Handler {
 	integrations.RegisterRoutes(mux, cfg.IntegrationsHandler, authMW, tenantMW, requireMember, requireAdmin)
 	realtime.RegisterRoutes(mux, cfg.RealtimeHandler)
 	programmes.RegisterRoutes(mux, cfg.ProgrammesHandler, authMW, tenantMW, requireAdmin)
+	rollup.RegisterRoutes(mux, cfg.RollupHandler, authMW, tenantMW)
 
 	var handler http.Handler = mux
 	handler = middleware.Logging(handler)

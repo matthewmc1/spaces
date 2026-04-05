@@ -23,6 +23,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/redis"
 	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
 	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
+	"github.com/matthewmcgibbon/spaces/backend/internal/rollup"
 	"github.com/matthewmcgibbon/spaces/backend/internal/settings"
 	"github.com/matthewmcgibbon/spaces/backend/internal/spaces"
 	"github.com/matthewmcgibbon/spaces/backend/internal/tenant"
@@ -114,6 +115,12 @@ func main() {
 	integrationsHandler := integrations.NewHandler(integrationsSvc)
 	programmesHandler := programmes.NewHandler(programmesSvc)
 
+	rollupSvc := rollup.NewService(pool, redisClient)
+	rollupHandler := rollup.NewHandler(rollupSvc)
+
+	// Start the materialized view refresh loop (runs until server shutdown)
+	rollup.StartRefreshLoop(ctx, pool)
+
 	router := api.NewRouter(api.Config{
 		CORSOrigin:          cfg.CORSOrigin,
 		AuthMiddleware:      auth.NewMiddleware(tokenVerifier, resolver),
@@ -129,6 +136,7 @@ func main() {
 		IntegrationsHandler: integrationsHandler,
 		RealtimeHandler:     realtimeHandler,
 		ProgrammesHandler:   programmesHandler,
+		RollupHandler:       rollupHandler,
 	})
 
 	srv := &http.Server{
