@@ -20,4 +20,5 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.H
 	mux.Handle("GET /cards/{id}/links", read(h.HandleListCardLinks))
 	mux.Handle("POST /cards/{id}/links", write(h.HandleCreateCardLink))
 	mux.Handle("DELETE /card-links/{id}", write(h.HandleDeleteCardLink))
+	mux.HandleFunc("POST /webhooks/{provider}", h.HandleWebhook)
 }
