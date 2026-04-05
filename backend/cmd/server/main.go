@@ -71,6 +71,12 @@ func main() {
 		)
 	}
 
+	var resolver *auth.Resolver
+	if cfg.ClerkSecretKey != "" {
+		// Clerk path: we need the resolver to map external_auth_id to local users
+		resolver = auth.NewResolver(pool)
+	}
+
 	realtimeHandler := realtime.NewHandler(hub, tokenVerifier, cfg.CORSOrigin)
 
 	rbacRepo := rbac.NewRepository(pool)
@@ -103,7 +109,7 @@ func main() {
 
 	router := api.NewRouter(api.Config{
 		CORSOrigin:          cfg.CORSOrigin,
-		AuthMiddleware:      auth.NewMiddleware(tokenVerifier),
+		AuthMiddleware:      auth.NewMiddleware(tokenVerifier, resolver),
 		TenantMW:            tenant.NewMiddleware(),
 		RBACService:         rbacSvc,
 		RBACHandler:         rbacHandler,

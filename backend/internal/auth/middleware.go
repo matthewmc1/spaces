@@ -18,11 +18,13 @@ type TokenVerifier interface {
 // Middleware extracts and verifies the Bearer token from incoming requests.
 type Middleware struct {
 	verifier TokenVerifier
+	resolver *Resolver
 }
 
-// NewMiddleware creates a new auth Middleware using the given TokenVerifier.
-func NewMiddleware(verifier TokenVerifier) *Middleware {
-	return &Middleware{verifier: verifier}
+// NewMiddleware creates a new auth Middleware. The resolver is optional —
+// pass nil for dev mode (DevVerifier already returns fully-populated claims).
+func NewMiddleware(verifier TokenVerifier, resolver *Resolver) *Middleware {
+	return &Middleware{verifier: verifier, resolver: resolver}
 }
 
 // Handler returns an http.Handler that validates the Authorization header
@@ -45,6 +47,14 @@ func (m *Middleware) Handler(next http.Handler) http.Handler {
 		if err != nil {
 			respond.Error(w, errors.Unauthorized("invalid token"))
 			return
+		}
+
+		if m.resolver != nil {
+			claims, err = m.resolver.Resolve(r.Context(), claims)
+			if err != nil {
+				respond.Error(w, errors.Unauthorized("user resolution failed"))
+				return
+			}
 		}
 
 		ctx := WithClaims(r.Context(), claims)
