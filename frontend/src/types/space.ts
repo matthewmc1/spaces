@@ -1,5 +1,7 @@
 export type SpaceStatus = "on_track" | "at_risk" | "behind" | "paused";
 
+export type SpaceType = "organization" | "department" | "team" | "workstream";
+
 export interface Space {
   id: string;
   tenant_id: string;
@@ -12,6 +14,7 @@ export interface Space {
   path: string;
   owner_id: string;
   visibility: "public" | "private" | "restricted";
+  space_type: SpaceType;
   status: SpaceStatus;
   created_at: string;
   updated_at: string;
@@ -30,6 +33,7 @@ export interface CreateSpaceInput {
   icon?: string;
   color?: string;
   visibility?: string;
+  space_type?: SpaceType;
 }
 
 export interface UpdateSpaceInput {
@@ -39,4 +43,5 @@ export interface UpdateSpaceInput {
   color?: string;
   visibility?: string;
   status?: SpaceStatus;
+  space_type?: SpaceType;
 }
