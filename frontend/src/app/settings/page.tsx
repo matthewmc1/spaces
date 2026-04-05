@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/common/Sidebar";
 import { useSettings, useUpdateSettings } from "@/hooks/useSettings";
 import { useSpaces } from "@/hooks/useSpaces";
 import { Select } from "@/components/ui/Select";
+import { MembersList } from "@/components/settings/MembersList";
 import type { UpdateSettingsInput } from "@/types/settings";
 
 const TIMEZONES = [
@@ -304,6 +305,9 @@ export default function SettingsPage() {
                 </div>
               </SettingRow>
             </SectionCard>
+
+            {/* Members */}
+            <MembersList />
           </div>
         </div>
       </main>
