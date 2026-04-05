@@ -69,7 +69,7 @@ func (s *AuthService) Signup(ctx context.Context, input SignupInput) (*User, err
 	err = tx.QueryRow(ctx,
 		`INSERT INTO users (tenant_id, external_auth_id, email, name, role)
 		 VALUES ($1, $2, $3, $4, 'owner')
-		 RETURNING id, tenant_id, external_auth_id, email, name, avatar_url, role, created_at`,
+		 RETURNING id, tenant_id, external_auth_id, email, name, COALESCE(avatar_url, ''), role, created_at`,
 		tenantID, externalAuthID, input.Email, input.UserName,
 	).Scan(
 		&u.ID,
@@ -106,7 +106,7 @@ func (s *AuthService) InviteUser(ctx context.Context, tenantID uuid.UUID, name, 
 	const q = `
 		INSERT INTO users (tenant_id, external_auth_id, email, name, role)
 		VALUES ($1, $2, $3, $4, COALESCE(NULLIF($5, ''), 'member'))
-		RETURNING id, tenant_id, external_auth_id, email, name, avatar_url, role, created_at`
+		RETURNING id, tenant_id, external_auth_id, email, name, COALESCE(avatar_url, ''), role, created_at`
 
 	row := s.db.QueryRow(ctx, q, tenantID, externalAuthID, email, name, role)
 	return scanUser(row)
@@ -115,7 +115,7 @@ func (s *AuthService) InviteUser(ctx context.Context, tenantID uuid.UUID, name, 
 // ListUsers returns all users in the given tenant ordered by name.
 func (s *AuthService) ListUsers(ctx context.Context, tenantID uuid.UUID) ([]User, error) {
 	const q = `
-		SELECT id, tenant_id, external_auth_id, email, name, avatar_url, role, created_at
+		SELECT id, tenant_id, external_auth_id, email, name, COALESCE(avatar_url, ''), role, created_at
 		FROM users
 		WHERE tenant_id = $1
 		ORDER BY name`

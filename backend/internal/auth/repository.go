@@ -24,7 +24,7 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 // Returns errors.NotFound if the user does not exist.
 func (r *Repository) GetByExternalID(ctx context.Context, externalID string) (*User, error) {
 	const q = `
-		SELECT id, tenant_id, external_auth_id, email, name, avatar_url, role, created_at
+		SELECT id, tenant_id, external_auth_id, email, name, COALESCE(avatar_url, ''), role, created_at
 		FROM users
 		WHERE external_auth_id = $1`
 
@@ -43,7 +43,7 @@ func (r *Repository) GetByExternalID(ctx context.Context, externalID string) (*U
 // Returns errors.NotFound if the user does not exist.
 func (r *Repository) GetByID(ctx context.Context, tenantID, userID uuid.UUID) (*User, error) {
 	const q = `
-		SELECT id, tenant_id, external_auth_id, email, name, avatar_url, role, created_at
+		SELECT id, tenant_id, external_auth_id, email, name, COALESCE(avatar_url, ''), role, created_at
 		FROM users
 		WHERE tenant_id = $1 AND id = $2`
 
