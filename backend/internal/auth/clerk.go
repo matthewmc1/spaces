@@ -2,23 +2,96 @@ package auth
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"strings"
 
+	"github.com/MicahParks/keyfunc/v3"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/errors"
 )
 
-// ClerkVerifier is a stub TokenVerifier that always returns an error.
-// Replace with a real Clerk SDK integration when ready.
-type ClerkVerifier struct{}
-
-// NewClerkVerifier creates a new ClerkVerifier stub.
-func NewClerkVerifier() *ClerkVerifier {
-	return &ClerkVerifier{}
+// ClerkVerifier validates Clerk session JWTs via Clerk's JWKS endpoint.
+type ClerkVerifier struct {
+	jwks keyfunc.Keyfunc
 }
 
-// Verify always returns an unauthorized error until Clerk is configured.
-func (c *ClerkVerifier) Verify(_ context.Context, _ string) (*Claims, error) {
-	return nil, errors.Unauthorized("clerk verification not yet configured")
+// NewClerkVerifier derives the JWKS URL from the publishable key and fetches
+// the key set. The publishable key encodes the Clerk frontend API domain as
+// base64 in the portion after "pk_test_" or "pk_live_".
+func NewClerkVerifier(ctx context.Context, publishableKey string) (*ClerkVerifier, error) {
+	if publishableKey == "" {
+		return nil, fmt.Errorf("clerk publishable key is empty")
+	}
+
+	domain, err := clerkDomainFromPublishableKey(publishableKey)
+	if err != nil {
+		return nil, err
+	}
+
+	jwksURL := "https://" + domain + "/.well-known/jwks.json"
+	jwks, err := keyfunc.NewDefaultCtx(ctx, []string{jwksURL})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch clerk jwks: %w", err)
+	}
+
+	return &ClerkVerifier{jwks: jwks}, nil
+}
+
+// clerkDomainFromPublishableKey decodes the base64 domain from a Clerk
+// publishable key of the form "pk_test_<base64>" or "pk_live_<base64>".
+// The decoded value has a trailing "$" that must be removed.
+func clerkDomainFromPublishableKey(key string) (string, error) {
+	var encoded string
+	switch {
+	case strings.HasPrefix(key, "pk_test_"):
+		encoded = strings.TrimPrefix(key, "pk_test_")
+	case strings.HasPrefix(key, "pk_live_"):
+		encoded = strings.TrimPrefix(key, "pk_live_")
+	default:
+		return "", fmt.Errorf("invalid clerk publishable key prefix")
+	}
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode publishable key: %w", err)
+	}
+	return strings.TrimSuffix(string(decoded), "$"), nil
+}
+
+// Verify validates the JWT signature via JWKS and extracts Claims.
+// Clerk session tokens have the user ID in the "sub" claim.
+// Returned Claims have ExternalAuthID set; the User/Tenant IDs are populated
+// later by a resolver middleware (see auth.Resolver).
+func (c *ClerkVerifier) Verify(ctx context.Context, token string) (*Claims, error) {
+	parsed, err := jwt.Parse(token, c.jwks.Keyfunc)
+	if err != nil {
+		return nil, errors.Unauthorized("invalid clerk token: " + err.Error())
+	}
+	if !parsed.Valid {
+		return nil, errors.Unauthorized("clerk token invalid")
+	}
+
+	mapClaims, ok := parsed.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.Unauthorized("clerk claims malformed")
+	}
+
+	sub, _ := mapClaims["sub"].(string)
+	if sub == "" {
+		return nil, errors.Unauthorized("clerk token missing sub claim")
+	}
+
+	email, _ := mapClaims["email"].(string)
+
+	return &Claims{
+		UserID:         uuid.Nil,
+		TenantID:       uuid.Nil,
+		ExternalAuthID: sub,
+		Email:          email,
+		Role:           "member",
+	}, nil
 }
 
 // DevVerifier accepts any non-empty token and returns fixed claims.
@@ -41,7 +114,6 @@ func NewDevVerifier(tenantID, userID uuid.UUID) *DevVerifier {
 }
 
 // Verify returns fixed Claims for any non-empty token.
-// Returns errors.Unauthorized if the token is empty.
 func (d *DevVerifier) Verify(_ context.Context, token string) (*Claims, error) {
 	if token == "" {
 		return nil, errors.Unauthorized("dev verifier: empty token")

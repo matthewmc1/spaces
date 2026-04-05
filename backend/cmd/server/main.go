@@ -57,7 +57,12 @@ func main() {
 
 	var tokenVerifier auth.TokenVerifier
 	if cfg.ClerkSecretKey != "" {
-		tokenVerifier = auth.NewClerkVerifier()
+		verifier, err := auth.NewClerkVerifier(ctx, cfg.ClerkPublishableKey)
+		if err != nil {
+			slog.Error("failed to init clerk verifier", "error", err)
+			os.Exit(1)
+		}
+		tokenVerifier = verifier
 	} else {
 		slog.Warn("no CLERK_SECRET_KEY set, using dev auth verifier")
 		tokenVerifier = auth.NewDevVerifier(

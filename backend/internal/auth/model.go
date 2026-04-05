@@ -8,10 +8,11 @@ import (
 
 // Claims holds the decoded JWT/token claims for an authenticated user.
 type Claims struct {
-	UserID   uuid.UUID
-	TenantID uuid.UUID
-	Email    string
-	Role     string
+	UserID         uuid.UUID
+	TenantID       uuid.UUID
+	ExternalAuthID string
+	Email          string
+	Role           string
 }
 
 // User represents an authenticated user record in the database.
