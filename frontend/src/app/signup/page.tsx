@@ -61,7 +61,7 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-[var(--radius-lg)] border border-neutral-200/60 shadow-[var(--shadow-sm)] p-8">
+        <div className="bg-white rounded-[var(--radius-lg)] border border-neutral-200/60 shadow-[var(--shadow-sm)] p-4 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Organization name *"

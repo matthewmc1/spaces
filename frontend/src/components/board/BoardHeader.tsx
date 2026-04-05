@@ -37,7 +37,7 @@ export function BoardHeader({
   canEdit = true,
 }: BoardHeaderProps) {
   return (
-    <div className="flex items-start justify-between pb-4 border-b border-neutral-200/60 mb-5">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between pb-4 border-b border-neutral-200/60 mb-5">
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-neutral-800 tracking-[-0.02em]">
           {spaceName}
@@ -51,7 +51,7 @@ export function BoardHeader({
           </p>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center flex-wrap gap-2">
         {canEdit && (
           <Button
             size="sm"

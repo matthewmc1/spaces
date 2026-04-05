@@ -135,7 +135,7 @@ export default function SettingsPage() {
     return (
       <div className="flex h-screen overflow-hidden bg-neutral-50">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-2xl mx-auto space-y-6 animate-pulse">
             {[1, 2, 3, 4].map((n) => (
               <div key={n} className="h-40 bg-neutral-100 rounded-[var(--radius-md)]" />

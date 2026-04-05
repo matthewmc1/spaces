@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Settings, LayoutDashboard, Zap, HelpCircle } from "lucide-react";
+import { Settings, LayoutDashboard, Zap, HelpCircle, Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { SpaceTree } from "@/components/spaces/SpaceTree";
 import { UserButton } from "@clerk/nextjs";
@@ -11,11 +12,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeSpaceId }: SidebarProps) {
-  return (
-    <aside className="flex-shrink-0 h-screen w-64 bg-white border-r border-neutral-200/60 flex flex-col">
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const sidebarContent = (
+    <aside className={`
+      flex-shrink-0 h-screen w-64 bg-white border-r border-neutral-200/60 flex flex-col
+      fixed inset-y-0 left-0 z-50 transform transition-transform duration-200
+      md:static md:translate-x-0
+      ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+    `}>
       {/* Logo + Motivational */}
       <div className="px-5 pt-5 pb-3">
-        <Link href="/spaces" className="inline-block">
+        <Link href="/spaces" className="inline-block" onClick={() => setMobileOpen(false)}>
           <Logo variant="full" size={32} />
         </Link>
         <MotivationalBanner />
@@ -30,6 +38,7 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
         </p>
         <Link
           href="/spaces"
+          onClick={() => setMobileOpen(false)}
           className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-md)] text-[13px] font-[family-name:var(--font-sans)] text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 transition-all group"
         >
           <LayoutDashboard size={15} className="text-neutral-400 group-hover:text-primary-500 transition-colors" />
@@ -47,20 +56,54 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
       {/* Bottom section */}
       <div className="mx-5 border-t border-neutral-100" />
       <div className="p-3 space-y-0.5">
-        <SidebarLink href="#" icon={<HelpCircle size={14} />} label="Help & Feedback" />
-        <SidebarLink href="/settings" icon={<Settings size={14} />} label="Settings" />
+        <SidebarLink href="#" icon={<HelpCircle size={14} />} label="Help & Feedback" onClick={() => setMobileOpen(false)} />
+        <SidebarLink href="/settings" icon={<Settings size={14} />} label="Settings" onClick={() => setMobileOpen(false)} />
         <div className="pt-1 px-2.5">
           <UserButton />
         </div>
       </div>
     </aside>
   );
+
+  return (
+    <>
+      {/* Hamburger button — mobile only, visible when sidebar is closed */}
+      <button
+        className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-[var(--radius-md)] bg-white border border-neutral-200/60 shadow-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 transition-colors"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Backdrop — mobile only, shown when sidebar is open */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 z-40"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {sidebarContent}
+    </>
+  );
 }
 
-function SidebarLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+function SidebarLink({
+  href,
+  icon,
+  label,
+  onClick,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+}) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-[family-name:var(--font-sans)] text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 transition-colors"
     >
       {icon}
