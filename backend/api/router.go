@@ -25,6 +25,7 @@ type Config struct {
 	GoalHandler     *goals.Handler
 	MetricsHandler  *metrics.Handler
 	SettingsHandler *settings.Handler
+	RBACHandler     *rbac.Handler
 }
 
 func NewRouter(cfg Config) http.Handler {
@@ -46,6 +47,7 @@ func NewRouter(cfg Config) http.Handler {
 	goals.RegisterRoutes(mux, cfg.GoalHandler, authMW, tenantMW, requireMember, requireAdmin)
 	metrics.RegisterRoutes(mux, cfg.MetricsHandler, authMW, tenantMW)
 	settings.RegisterRoutes(mux, cfg.SettingsHandler, authMW, tenantMW)
+	rbac.RegisterRoutes(mux, cfg.RBACHandler, authMW, tenantMW, requireAdmin)
 
 	var handler http.Handler = mux
 	handler = middleware.Logging(handler)
