@@ -6,6 +6,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/auth"
 	"github.com/matthewmcgibbon/spaces/backend/internal/cards"
 	"github.com/matthewmcgibbon/spaces/backend/internal/goals"
+	"github.com/matthewmcgibbon/spaces/backend/internal/integrations"
 	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/middleware"
 	"github.com/matthewmcgibbon/spaces/backend/internal/rbac"
@@ -22,10 +23,11 @@ type Config struct {
 	AuthHandler     *auth.AuthHandler
 	SpaceHandler    *spaces.Handler
 	CardHandler     *cards.Handler
-	GoalHandler     *goals.Handler
-	MetricsHandler  *metrics.Handler
-	SettingsHandler *settings.Handler
-	RBACHandler     *rbac.Handler
+	GoalHandler         *goals.Handler
+	MetricsHandler      *metrics.Handler
+	SettingsHandler     *settings.Handler
+	RBACHandler         *rbac.Handler
+	IntegrationsHandler *integrations.Handler
 }
 
 func NewRouter(cfg Config) http.Handler {
@@ -48,6 +50,7 @@ func NewRouter(cfg Config) http.Handler {
 	metrics.RegisterRoutes(mux, cfg.MetricsHandler, authMW, tenantMW)
 	settings.RegisterRoutes(mux, cfg.SettingsHandler, authMW, tenantMW)
 	rbac.RegisterRoutes(mux, cfg.RBACHandler, authMW, tenantMW, requireAdmin)
+	integrations.RegisterRoutes(mux, cfg.IntegrationsHandler, authMW, tenantMW, requireMember, requireAdmin)
 
 	var handler http.Handler = mux
 	handler = middleware.Logging(handler)
