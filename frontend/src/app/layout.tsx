@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Serif, DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/common/QueryProvider";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const instrumentSerif = Instrument_Serif({
   weight: "400",
@@ -34,10 +35,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
-      <body className="antialiased">
-        <QueryProvider>{children}</QueryProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
+        <body className="antialiased">
+          <QueryProvider>{children}</QueryProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
