@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { Sidebar } from "@/components/common/Sidebar";
 import { useSettings, useUpdateSettings } from "@/hooks/useSettings";
 import { useSpaces } from "@/hooks/useSpaces";
 import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
 import { MembersList } from "@/components/settings/MembersList";
 import type { UpdateSettingsInput } from "@/types/settings";
 
@@ -304,6 +306,16 @@ export default function SettingsPage() {
                   </select>
                 </div>
               </SettingRow>
+            </SectionCard>
+
+            {/* Integrations */}
+            <SectionCard title="Integrations">
+              <p className="text-sm text-neutral-500 mb-3">
+                Connect GitHub and GitLab to automatically link PRs and issues to your cards.
+              </p>
+              <Link href="/settings/integrations">
+                <Button variant="secondary" size="sm">Manage Integrations →</Button>
+              </Link>
             </SectionCard>
 
             {/* Members */}
