@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -14,11 +14,23 @@ import {
   Square,
   Trash2,
   X,
+  GitPullRequest,
+  GitBranch,
+  GitCommit,
+  CircleDot,
+  CheckCircle2,
 } from "lucide-react";
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { useGoals, useCreateGoalLink, useDeleteGoalLink } from "@/hooks/useGoals";
 import type { Goal, GoalLink } from "@/types/goal";
+import {
+  useCardLinks,
+  useCreateCardLink,
+  useDeleteCardLink,
+  useIntegrations,
+} from "@/hooks/useIntegrations";
+import type { ExternalType, CreateCardLinkInput } from "@/types/integration";
 
 interface CardDetailDialogProps {
   card: Card | null;
@@ -64,6 +76,33 @@ const LINK_TYPE_STYLES: Record<GoalLink["link_type"], { dot: string; bg: string;
   blocks:   { dot: "bg-rose-400",    bg: "bg-rose-50/50",     border: "border-rose-100",     badge: "text-rose-700 bg-rose-50 border-rose-200" },
 };
 
+const EXTERNAL_TYPE_ICONS: Record<ExternalType, React.ElementType> = {
+  pull_request: GitPullRequest,
+  issue: CircleDot,
+  commit: GitCommit,
+  branch: GitBranch,
+  build: CheckCircle2,
+};
+
+const EXTERNAL_TYPE_OPTIONS: { value: ExternalType; label: string }[] = [
+  { value: "pull_request", label: "Pull Request" },
+  { value: "issue", label: "Issue" },
+  { value: "commit", label: "Commit" },
+  { value: "branch", label: "Branch" },
+  { value: "build", label: "Build" },
+];
+
+function getLinkStatusStyle(status?: string) {
+  switch (status) {
+    case "open":    return "text-blue-700 bg-blue-50 border-blue-200";
+    case "merged":  return "text-purple-700 bg-purple-50 border-purple-200";
+    case "closed":  return "text-neutral-500 bg-neutral-50 border-neutral-200";
+    case "passing": return "text-emerald-700 bg-emerald-50 border-emerald-200";
+    case "failing": return "text-rose-700 bg-rose-50 border-rose-200";
+    default:        return "text-neutral-500 bg-neutral-50 border-neutral-200";
+  }
+}
+
 export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onDelete }: CardDetailDialogProps) {
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtask, setNewSubtask] = useState("");
@@ -85,6 +124,19 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
   const createLink = useCreateGoalLink(spaceId);
   const deleteLink = useDeleteGoalLink(spaceId);
 
+  // Card links state
+  const [cardLinkFormOpen, setCardLinkFormOpen] = useState(false);
+  const [clIntegrationId, setClIntegrationId] = useState("");
+  const [clExternalType, setClExternalType] = useState<ExternalType>("pull_request");
+  const [clExternalId, setClExternalId] = useState("");
+  const [clExternalUrl, setClExternalUrl] = useState("");
+  const [clTitle, setClTitle] = useState("");
+
+  const { data: cardLinks } = useCardLinks(card?.id ?? "");
+  const createCardLink = useCreateCardLink(card?.id ?? "");
+  const deleteCardLinkMut = useDeleteCardLink(card?.id ?? "");
+  const { data: integrations } = useIntegrations();
+
   useEffect(() => {
     if (card) {
       setTitle(card.title);
@@ -95,6 +147,12 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
       setLabelsText(card.labels?.join(", ") || "");
       setConfirmDelete(false);
       setLocalLinks([]);
+      setCardLinkFormOpen(false);
+      setClIntegrationId("");
+      setClExternalType("pull_request");
+      setClExternalId("");
+      setClExternalUrl("");
+      setClTitle("");
     }
   }, [card]);
 
@@ -157,6 +215,27 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
     deleteLink.mutate(linkId, {
       onSuccess: () => {
         setLocalLinks((prev) => prev.filter((l) => l.id !== linkId));
+      },
+    });
+  }
+
+  function submitCardLink() {
+    if (!clIntegrationId || !clExternalId.trim() || !clExternalUrl.trim()) return;
+    const input: CreateCardLinkInput = {
+      integration_id: clIntegrationId,
+      external_type: clExternalType,
+      external_id: clExternalId.trim(),
+      external_url: clExternalUrl.trim(),
+      title: clTitle.trim() || undefined,
+    };
+    createCardLink.mutate(input, {
+      onSuccess: () => {
+        setCardLinkFormOpen(false);
+        setClIntegrationId("");
+        setClExternalType("pull_request");
+        setClExternalId("");
+        setClExternalUrl("");
+        setClTitle("");
       },
     });
   }
@@ -377,6 +456,122 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
               </>
             )}
           </div>
+        </div>
+
+        {/* Linked Resources */}
+        <div>
+          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Linked Resources</p>
+
+          {(!cardLinks || cardLinks.length === 0) && (
+            <p className="text-sm italic text-neutral-400 mb-2">No linked resources</p>
+          )}
+
+          {cardLinks && cardLinks.length > 0 && (
+            <div className="space-y-1 mb-2">
+              {cardLinks.map((link) => {
+                const Icon = EXTERNAL_TYPE_ICONS[link.external_type] ?? GitBranch;
+                return (
+                  <div
+                    key={link.id}
+                    className="flex items-center gap-2 group py-1 px-2 rounded-[var(--radius-sm)] border border-neutral-100 bg-neutral-50/50"
+                  >
+                    <Icon className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <a
+                      href={link.external_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-sm text-primary-600 hover:underline truncate"
+                    >
+                      {link.title || link.external_id}
+                    </a>
+                    {link.status && (
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${getLinkStatusStyle(link.status)}`}>
+                        {link.status}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => deleteCardLinkMut.mutate(link.id)}
+                      className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-rose-500 transition-all"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {integrations && integrations.length > 0 && (
+            <div>
+              {!cardLinkFormOpen ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setClIntegrationId(integrations[0].id);
+                    setCardLinkFormOpen(true);
+                  }}
+                  className="text-xs text-primary-500 hover:text-primary-700 transition-colors"
+                >
+                  + Link resource
+                </button>
+              ) : (
+                <div className="space-y-2 p-2 border border-neutral-200 rounded-[var(--radius-md)] bg-neutral-50">
+                  <select
+                    value={clIntegrationId}
+                    onChange={(e) => setClIntegrationId(e.target.value)}
+                    className="w-full text-xs border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-200"
+                  >
+                    {integrations.map((int) => (
+                      <option key={int.id} value={int.id}>{int.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={clExternalType}
+                    onChange={(e) => setClExternalType(e.target.value as ExternalType)}
+                    className="w-full text-xs border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-200"
+                  >
+                    {EXTERNAL_TYPE_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="External ID (e.g. 42)"
+                    value={clExternalId}
+                    onChange={(e) => setClExternalId(e.target.value)}
+                    className="w-full text-xs border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-200 placeholder:text-neutral-300"
+                  />
+                  <input
+                    type="url"
+                    placeholder="External URL"
+                    value={clExternalUrl}
+                    onChange={(e) => setClExternalUrl(e.target.value)}
+                    className="w-full text-xs border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-200 placeholder:text-neutral-300"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Title (optional)"
+                    value={clTitle}
+                    onChange={(e) => setClTitle(e.target.value)}
+                    className="w-full text-xs border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-200 placeholder:text-neutral-300"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={submitCardLink}
+                      disabled={!clIntegrationId || !clExternalId.trim() || !clExternalUrl.trim()}
+                    >
+                      Link
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setCardLinkFormOpen(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Move to column */}
