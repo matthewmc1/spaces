@@ -16,6 +16,7 @@ import (
 	"github.com/matthewmcgibbon/spaces/backend/internal/cards"
 	"github.com/matthewmcgibbon/spaces/backend/internal/goals"
 	"github.com/matthewmcgibbon/spaces/backend/internal/integrations"
+	"github.com/matthewmcgibbon/spaces/backend/internal/programmes"
 	"github.com/matthewmcgibbon/spaces/backend/internal/metrics"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/config"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/database"
@@ -93,6 +94,7 @@ func main() {
 	goalRepo := goals.NewRepository(pool)
 	settingsRepo := settings.NewRepository(pool)
 	integrationsRepo := integrations.NewRepository(pool)
+	programmesRepo := programmes.NewRepository(pool)
 
 	activityRepo := activity.NewRepository(pool)
 
@@ -102,6 +104,7 @@ func main() {
 	metricsSvc := metrics.NewService(pool)
 	settingsSvc := settings.NewService(settingsRepo)
 	integrationsSvc := integrations.NewService(integrationsRepo)
+	programmesSvc := programmes.NewService(programmesRepo)
 
 	spaceHandler := spaces.NewHandler(spaceSvc)
 	cardHandler := cards.NewHandler(cardSvc)
@@ -109,6 +112,7 @@ func main() {
 	metricsHandler := metrics.NewHandler(metricsSvc)
 	settingsHandler := settings.NewHandler(settingsSvc)
 	integrationsHandler := integrations.NewHandler(integrationsSvc)
+	programmesHandler := programmes.NewHandler(programmesSvc)
 
 	router := api.NewRouter(api.Config{
 		CORSOrigin:          cfg.CORSOrigin,
@@ -124,6 +128,7 @@ func main() {
 		SettingsHandler:     settingsHandler,
 		IntegrationsHandler: integrationsHandler,
 		RealtimeHandler:     realtimeHandler,
+		ProgrammesHandler:   programmesHandler,
 	})
 
 	srv := &http.Server{
