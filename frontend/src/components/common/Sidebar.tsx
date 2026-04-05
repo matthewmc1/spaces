@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Settings, LayoutDashboard, Zap, HelpCircle, Menu, X } from "lucide-react";
+import { Settings, LayoutDashboard, Zap, HelpCircle, Menu, X, Building2 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { SpaceTree } from "@/components/spaces/SpaceTree";
 import { UserButton } from "@clerk/nextjs";
@@ -43,6 +43,14 @@ export function Sidebar({ activeSpaceId }: SidebarProps) {
         >
           <LayoutDashboard size={15} className="text-neutral-400 group-hover:text-primary-500 transition-colors" />
           <span>All Spaces</span>
+        </Link>
+        <Link
+          href="/org"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-md)] text-[13px] font-[family-name:var(--font-sans)] text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 transition-all group"
+        >
+          <Building2 size={15} className="text-neutral-400 group-hover:text-primary-500 transition-colors" />
+          <span>Organization</span>
         </Link>
       </nav>
 
