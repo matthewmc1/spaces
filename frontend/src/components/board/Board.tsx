@@ -20,6 +20,7 @@ import { COLUMNS } from "@/types/card";
 import { useCards, useMoveCard, useUpdateCard, useDeleteCard, cardsByColumn } from "@/hooks/useCards";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useColumnVisibility } from "@/hooks/useColumnVisibility";
+import { useRealtime } from "@/hooks/useRealtime";
 import { BoardColumn } from "./BoardColumn";
 import { BoardCard, CardOverlay } from "./BoardCard";
 import { BoardHeader } from "./BoardHeader";
@@ -82,6 +83,9 @@ export function Board({
   const [triageOpen, setTriageOpen] = useState(false);
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>("none");
+
+  // Real-time updates. Uses "dev-token" until Clerk auth is wired in Task 11.
+  useRealtime(spaceId, "dev-token");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
