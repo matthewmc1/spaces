@@ -1,12 +1,12 @@
 "use client";
 
 import { Sidebar } from "@/components/common/Sidebar";
-import { useSpaces } from "@/hooks/useSpaces";
+import { useAllSpaces } from "@/hooks/useSpaces";
 import { useSpaceCardCounts } from "@/hooks/useCards";
 import { SpaceDashboard } from "@/components/spaces/SpaceDashboard";
 
 export default function SpacesPage() {
-  const { data: spaces, isLoading } = useSpaces();
+  const { data: spaces, isLoading } = useAllSpaces();
   const spaceIds = spaces?.map((s) => s.id) ?? [];
   const { data: cardsBySpace } = useSpaceCardCounts(spaceIds);
 

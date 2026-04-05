@@ -17,6 +17,7 @@ type Repository interface {
 	GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Space, error)
 	Update(ctx context.Context, tenantID, id uuid.UUID, input UpdateInput) (*Space, error)
 	Delete(ctx context.Context, tenantID, id uuid.UUID) error
+	ListAll(ctx context.Context, tenantID uuid.UUID) ([]Space, error)
 	ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Space, error)
 	ListChildren(ctx context.Context, tenantID, parentID uuid.UUID) ([]Space, error)
 	GetSubtree(ctx context.Context, tenantID uuid.UUID, rootPath string) ([]Space, error)
@@ -120,6 +121,20 @@ func (r *pgRepository) Delete(ctx context.Context, tenantID, id uuid.UUID) error
 		return domainerrors.NotFound("space", id.String())
 	}
 	return nil
+}
+
+func (r *pgRepository) ListAll(ctx context.Context, tenantID uuid.UUID) ([]Space, error) {
+	const q = `
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
+		FROM spaces
+		WHERE tenant_id = $1
+		ORDER BY path`
+
+	rows, err := r.db.Query(ctx, q, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	return scanSpaces(rows)
 }
 
 func (r *pgRepository) ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Space, error) {

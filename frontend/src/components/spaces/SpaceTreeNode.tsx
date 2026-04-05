@@ -2,9 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronDown, Folder, Trash2, MoreHorizontal } from "lucide-react";
+import { ChevronRight, ChevronDown, Building2, Layers, Users, Folder, Trash2, MoreHorizontal } from "lucide-react";
 import { useDeleteSpace } from "@/hooks/useSpaces";
-import type { Space } from "@/types/space";
+import type { Space, SpaceType } from "@/types/space";
+
+const typeIcon: Record<SpaceType, typeof Folder> = {
+  organization: Building2,
+  department: Layers,
+  team: Users,
+  workstream: Folder,
+};
+
+const typeColor: Record<SpaceType, string> = {
+  organization: "text-primary-500",
+  department: "text-sky-500",
+  team: "text-emerald-500",
+  workstream: "text-neutral-400",
+};
 
 interface SpaceTreeNodeProps {
   space: Space;
@@ -21,12 +35,14 @@ export function SpaceTreeNode({
 }: SpaceTreeNodeProps) {
   const children = allSpaces.filter((s) => s.parent_space_id === space.id);
   const hasChildren = children.length > 0;
-  const [expanded, setExpanded] = useState(level < 2);
+  const [expanded, setExpanded] = useState(level < 3);
   const [showMenu, setShowMenu] = useState(false);
   const deleteSpace = useDeleteSpace();
 
   const isActive = space.id === activeSpaceId;
-  const indentPx = level * 16 + 8;
+  const indentPx = level * 14 + 8;
+  const Icon = typeIcon[space.space_type] ?? Folder;
+  const iconColor = typeColor[space.space_type] ?? "text-neutral-400";
 
   const handleDelete = () => {
     if (confirm(`Delete "${space.name}"? This cannot be undone.`)) {
@@ -58,11 +74,7 @@ export function SpaceTreeNode({
           href={`/spaces/${space.id}`}
           className="flex items-center gap-2 flex-1 min-w-0 truncate"
         >
-          <Folder
-            size={13}
-            className="flex-shrink-0"
-            style={{ color: space.color ?? "#94a3b8" }}
-          />
+          <Icon size={13} className={`flex-shrink-0 ${iconColor}`} />
           <span className="text-[13px] font-[family-name:var(--font-display)] truncate">
             {space.name}
           </span>

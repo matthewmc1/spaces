@@ -21,7 +21,9 @@ func NewHandler(svc *Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-// HandleListSpaces handles GET /spaces — lists root spaces for the tenant.
+// HandleListSpaces handles GET /spaces.
+// By default it returns only root spaces. Pass ?scope=all to get every space
+// in the tenant (used by the sidebar tree to render the full hierarchy).
 func (h *Handler) HandleListSpaces(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenant.FromContext(r.Context())
 	if err != nil {
@@ -29,7 +31,12 @@ func (h *Handler) HandleListSpaces(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	spaces, err := h.svc.ListRoots(r.Context(), tenantID)
+	var spaces []Space
+	if r.URL.Query().Get("scope") == "all" {
+		spaces, err = h.svc.ListAll(r.Context(), tenantID)
+	} else {
+		spaces, err = h.svc.ListRoots(r.Context(), tenantID)
+	}
 	if err != nil {
 		respond.Error(w, err)
 		return

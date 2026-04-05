@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useSpaces } from "@/hooks/useSpaces";
+import { useAllSpaces } from "@/hooks/useSpaces";
 import { SpaceTreeNode } from "./SpaceTreeNode";
 import { CreateSpaceDialog } from "./CreateSpaceDialog";
 
@@ -11,7 +11,7 @@ interface SpaceTreeProps {
 }
 
 export function SpaceTree({ activeSpaceId }: SpaceTreeProps) {
-  const { data: spaces, isLoading } = useSpaces();
+  const { data: spaces, isLoading } = useAllSpaces();
   const [showCreate, setShowCreate] = useState(false);
 
   const rootSpaces = spaces?.filter((s) => !s.parent_space_id) ?? [];

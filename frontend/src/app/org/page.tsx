@@ -3,7 +3,7 @@
 import { Sidebar } from "@/components/common/Sidebar";
 import { useOrgRollup } from "@/hooks/useRollup";
 import { useProgrammes } from "@/hooks/useProgrammes";
-import { useSpaces } from "@/hooks/useSpaces";
+import { useAllSpaces } from "@/hooks/useSpaces";
 import { RollupKPIs } from "@/components/rollup/RollupKPIs";
 import { DepartmentBreakdown } from "@/components/rollup/DepartmentBreakdown";
 import { ProgrammeCard } from "@/components/rollup/ProgrammeCard";
@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 export default function OrgDashboardPage() {
   const { data: rollup, isLoading } = useOrgRollup();
   const { data: programmes } = useProgrammes();
-  const { data: spaces } = useSpaces();
+  const { data: spaces } = useAllSpaces();
 
   const spaceNames: Record<string, string> = {};
   (spaces ?? []).forEach((s) => { spaceNames[s.id] = s.name; });

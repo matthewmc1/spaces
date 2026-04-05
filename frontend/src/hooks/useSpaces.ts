@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import {
   listSpaces,
+  listAllSpaces,
   getSpace,
   getSpaceTree,
   createSpace,
@@ -17,6 +18,13 @@ export function useSpaces() {
   return useQuery({
     queryKey: ["spaces"],
     queryFn: listSpaces,
+  });
+}
+
+export function useAllSpaces() {
+  return useQuery({
+    queryKey: ["spaces", "all"],
+    queryFn: listAllSpaces,
   });
 }
 

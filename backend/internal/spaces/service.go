@@ -94,6 +94,11 @@ func (s *Service) ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Space, e
 	return s.repo.ListRoots(ctx, tenantID)
 }
 
+// ListAll returns every space in the tenant (for tree rendering).
+func (s *Service) ListAll(ctx context.Context, tenantID uuid.UUID) ([]Space, error) {
+	return s.repo.ListAll(ctx, tenantID)
+}
+
 // GetTree returns a root space and all its descendants as a tree.
 func (s *Service) GetTree(ctx context.Context, tenantID, id uuid.UUID) (*TreeNode, error) {
 	root, err := s.repo.GetByID(ctx, tenantID, id)

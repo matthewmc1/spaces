@@ -10,6 +10,10 @@ export function listSpaces(): Promise<Space[]> {
   return apiFetch<Space[]>("/spaces");
 }
 
+export function listAllSpaces(): Promise<Space[]> {
+  return apiFetch<Space[]>("/spaces?scope=all");
+}
+
 export function getSpace(id: string): Promise<Space> {
   return apiFetch<Space>(`/spaces/${id}`);
 }
