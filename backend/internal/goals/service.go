@@ -5,20 +5,23 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/matthewmcgibbon/spaces/backend/internal/activity"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/errors"
 	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
 )
 
 // Service provides business logic for the goals domain.
 type Service struct {
-	repo Repository
-	bus  *realtime.Bus
+	repo     Repository
+	bus      *realtime.Bus
+	activity *activity.Repository
 }
 
 // NewService creates a new Service with the given Repository.
-// bus may be nil — event publishing is skipped when it is.
-func NewService(repo Repository, bus *realtime.Bus) *Service {
-	return &Service{repo: repo, bus: bus}
+// bus and activityRepo may be nil — event publishing and activity logging are
+// skipped when they are.
+func NewService(repo Repository, bus *realtime.Bus, activityRepo *activity.Repository) *Service {
+	return &Service{repo: repo, bus: bus, activity: activityRepo}
 }
 
 // Create validates input and creates a new goal.
@@ -32,6 +35,9 @@ func (s *Service) Create(ctx context.Context, tenantID, spaceID, createdBy uuid.
 	}
 	if s.bus != nil && goal != nil {
 		_ = s.bus.Publish(ctx, goal.TenantID, goal.SpaceID, createdBy, realtime.EventGoalCreated, goal)
+	}
+	if s.activity != nil && goal != nil {
+		_ = s.activity.Log(ctx, goal.TenantID, goal.ID, createdBy, "goal", "created", goal)
 	}
 	return goal, nil
 }
@@ -58,6 +64,9 @@ func (s *Service) Update(ctx context.Context, tenantID, id, actorID uuid.UUID, i
 	if s.bus != nil && goal != nil {
 		_ = s.bus.Publish(ctx, goal.TenantID, goal.SpaceID, actorID, realtime.EventGoalUpdated, goal)
 	}
+	if s.activity != nil && goal != nil {
+		_ = s.activity.Log(ctx, goal.TenantID, goal.ID, actorID, "goal", "updated", goal)
+	}
 	return goal, nil
 }
 
@@ -71,6 +80,9 @@ func (s *Service) Delete(ctx context.Context, tenantID, id, actorID uuid.UUID) e
 	}
 	if s.bus != nil && goal != nil {
 		_ = s.bus.Publish(ctx, goal.TenantID, goal.SpaceID, actorID, realtime.EventGoalDeleted, map[string]any{"id": id})
+	}
+	if s.activity != nil && goal != nil {
+		_ = s.activity.Log(ctx, goal.TenantID, goal.ID, actorID, "goal", "deleted", map[string]any{"id": id})
 	}
 	return nil
 }

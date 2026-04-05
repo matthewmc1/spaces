@@ -80,7 +80,7 @@ func TestService_Move_ValidTransition(t *testing.T) {
 		},
 	}
 
-	svc := NewService(mock, nil)
+	svc := NewService(mock, nil, nil)
 	result, err := svc.Move(context.Background(), tenantID, cardID, uuid.Nil, MoveInput{
 		Column:   ColumnIcebox,
 		Position: 2000,
@@ -118,7 +118,7 @@ func TestService_Move_InvalidTransition(t *testing.T) {
 		},
 	}
 
-	svc := NewService(mock, nil)
+	svc := NewService(mock, nil, nil)
 	result, err := svc.Move(context.Background(), tenantID, cardID, uuid.Nil, MoveInput{
 		Column:   ColumnDone,
 		Position: 1000,
@@ -137,7 +137,7 @@ func TestService_Create_MissingTitle(t *testing.T) {
 		},
 	}
 
-	svc := NewService(mock, nil)
+	svc := NewService(mock, nil, nil)
 	result, err := svc.Create(context.Background(), uuid.New(), uuid.New(), uuid.New(), CreateInput{
 		Title: "",
 	})

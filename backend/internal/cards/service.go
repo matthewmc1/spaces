@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/matthewmcgibbon/spaces/backend/internal/activity"
 	domainerrors "github.com/matthewmcgibbon/spaces/backend/internal/platform/errors"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/pagination"
 	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
@@ -13,14 +14,16 @@ import (
 
 // Service handles business logic for cards.
 type Service struct {
-	repo Repository
-	bus  *realtime.Bus
+	repo     Repository
+	bus      *realtime.Bus
+	activity *activity.Repository
 }
 
 // NewService creates a new Service with the given Repository.
-// bus may be nil — event publishing is skipped when it is.
-func NewService(repo Repository, bus *realtime.Bus) *Service {
-	return &Service{repo: repo, bus: bus}
+// bus and activityRepo may be nil — event publishing and activity logging are
+// skipped when they are.
+func NewService(repo Repository, bus *realtime.Bus, activityRepo *activity.Repository) *Service {
+	return &Service{repo: repo, bus: bus, activity: activityRepo}
 }
 
 // Create validates the input and delegates to the repository.
@@ -35,6 +38,9 @@ func (s *Service) Create(ctx context.Context, tenantID, spaceID, createdBy uuid.
 	}
 	if s.bus != nil && card != nil {
 		_ = s.bus.Publish(ctx, card.TenantID, card.SpaceID, createdBy, realtime.EventCardCreated, card)
+	}
+	if s.activity != nil && card != nil {
+		_ = s.activity.Log(ctx, card.TenantID, card.ID, createdBy, "card", "created", card)
 	}
 	return card, nil
 }
@@ -52,6 +58,9 @@ func (s *Service) Update(ctx context.Context, tenantID, id, actorID uuid.UUID, i
 	}
 	if s.bus != nil && card != nil {
 		_ = s.bus.Publish(ctx, card.TenantID, card.SpaceID, actorID, realtime.EventCardUpdated, card)
+	}
+	if s.activity != nil && card != nil {
+		_ = s.activity.Log(ctx, card.TenantID, card.ID, actorID, "card", "updated", card)
 	}
 	return card, nil
 }
@@ -74,6 +83,12 @@ func (s *Service) Move(ctx context.Context, tenantID, id, actorID uuid.UUID, inp
 	if s.bus != nil && moved != nil {
 		_ = s.bus.Publish(ctx, moved.TenantID, moved.SpaceID, actorID, realtime.EventCardMoved, moved)
 	}
+	if s.activity != nil && moved != nil {
+		_ = s.activity.Log(ctx, moved.TenantID, moved.ID, actorID, "card", "moved", map[string]any{
+			"from_column": card.ColumnName,
+			"to_column":   moved.ColumnName,
+		})
+	}
 	return moved, nil
 }
 
@@ -87,6 +102,9 @@ func (s *Service) Delete(ctx context.Context, tenantID, id, actorID uuid.UUID) e
 	}
 	if s.bus != nil && card != nil {
 		_ = s.bus.Publish(ctx, card.TenantID, card.SpaceID, actorID, realtime.EventCardDeleted, map[string]any{"id": id})
+	}
+	if s.activity != nil && card != nil {
+		_ = s.activity.Log(ctx, card.TenantID, card.ID, actorID, "card", "deleted", map[string]any{"id": id})
 	}
 	return nil
 }

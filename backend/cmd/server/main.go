@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/matthewmcgibbon/spaces/backend/api"
+	"github.com/matthewmcgibbon/spaces/backend/internal/activity"
 	"github.com/matthewmcgibbon/spaces/backend/internal/auth"
 	"github.com/matthewmcgibbon/spaces/backend/internal/cards"
 	"github.com/matthewmcgibbon/spaces/backend/internal/goals"
@@ -93,9 +94,11 @@ func main() {
 	settingsRepo := settings.NewRepository(pool)
 	integrationsRepo := integrations.NewRepository(pool)
 
-	spaceSvc := spaces.NewService(spaceRepo, bus)
-	cardSvc := cards.NewService(cardRepo, bus)
-	goalSvc := goals.NewService(goalRepo, bus)
+	activityRepo := activity.NewRepository(pool)
+
+	spaceSvc := spaces.NewService(spaceRepo, bus, activityRepo)
+	cardSvc := cards.NewService(cardRepo, bus, activityRepo)
+	goalSvc := goals.NewService(goalRepo, bus, activityRepo)
 	metricsSvc := metrics.NewService(pool)
 	settingsSvc := settings.NewService(settingsRepo)
 	integrationsSvc := integrations.NewService(integrationsRepo)

@@ -5,20 +5,23 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/matthewmcgibbon/spaces/backend/internal/activity"
 	"github.com/matthewmcgibbon/spaces/backend/internal/platform/errors"
 	"github.com/matthewmcgibbon/spaces/backend/internal/realtime"
 )
 
 // Service implements business logic for spaces.
 type Service struct {
-	repo Repository
-	bus  *realtime.Bus
+	repo     Repository
+	bus      *realtime.Bus
+	activity *activity.Repository
 }
 
 // NewService creates a new Service.
-// bus may be nil — event publishing is skipped when it is.
-func NewService(repo Repository, bus *realtime.Bus) *Service {
-	return &Service{repo: repo, bus: bus}
+// bus and activityRepo may be nil — event publishing and activity logging are
+// skipped when they are.
+func NewService(repo Repository, bus *realtime.Bus, activityRepo *activity.Repository) *Service {
+	return &Service{repo: repo, bus: bus, activity: activityRepo}
 }
 
 // Create validates input, computes the materialized path, and creates the space.
@@ -74,6 +77,9 @@ func (s *Service) Update(ctx context.Context, tenantID, id, actorID uuid.UUID, i
 	}
 	if s.bus != nil && space != nil {
 		_ = s.bus.Publish(ctx, space.TenantID, space.ID, actorID, realtime.EventSpaceUpdated, space)
+	}
+	if s.activity != nil && space != nil {
+		_ = s.activity.Log(ctx, space.TenantID, space.ID, actorID, "space", "updated", space)
 	}
 	return space, nil
 }
