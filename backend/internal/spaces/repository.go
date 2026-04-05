@@ -35,7 +35,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, ownerID uuid.UUID, 
 	const q = `
 		INSERT INTO spaces (tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE(NULLIF($10, ''), 'public'), COALESCE(NULLIF($11, ''), 'workstream'), 'on_track')
-		RETURNING id, tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status, created_at, updated_at`
+		RETURNING id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at`
 
 	row := r.db.QueryRow(ctx, q,
 		tenantID,
@@ -56,7 +56,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, ownerID uuid.UUID, 
 
 func (r *pgRepository) GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
 		FROM spaces
 		WHERE id = $1 AND tenant_id = $2`
 
@@ -84,7 +84,7 @@ func (r *pgRepository) Update(ctx context.Context, tenantID, id uuid.UUID, input
 			path        = COALESCE($10, path),
 			updated_at  = NOW()
 		WHERE id = $1 AND tenant_id = $2
-		RETURNING id, tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status, created_at, updated_at`
+		RETURNING id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at`
 
 	row := r.db.QueryRow(ctx, q,
 		id,
@@ -124,7 +124,7 @@ func (r *pgRepository) Delete(ctx context.Context, tenantID, id uuid.UUID) error
 
 func (r *pgRepository) ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1 AND parent_space_id IS NULL
 		ORDER BY name`
@@ -138,7 +138,7 @@ func (r *pgRepository) ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Spa
 
 func (r *pgRepository) ListChildren(ctx context.Context, tenantID, parentID uuid.UUID) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1 AND parent_space_id = $2
 		ORDER BY name`
@@ -152,7 +152,7 @@ func (r *pgRepository) ListChildren(ctx context.Context, tenantID, parentID uuid
 
 func (r *pgRepository) GetSubtree(ctx context.Context, tenantID uuid.UUID, rootPath string) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1 AND path LIKE $2
 		ORDER BY path`

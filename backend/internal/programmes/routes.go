@@ -18,4 +18,5 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.H
 	mux.Handle("GET /programmes/{id}/spaces", read(h.HandleListSpaces))
 	mux.Handle("POST /programmes/{id}/spaces", admin(h.HandleLinkSpace))
 	mux.Handle("DELETE /programmes/{id}/spaces/{spaceId}", admin(h.HandleUnlinkSpace))
+	mux.Handle("GET /spaces/{id}/programmes", read(h.HandleListProgrammesForSpace))
 }

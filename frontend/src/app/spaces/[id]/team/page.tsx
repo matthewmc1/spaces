@@ -6,7 +6,9 @@ import { Sidebar } from "@/components/common/Sidebar";
 import { useSpace, useSpaceTree } from "@/hooks/useSpaces";
 import { useSpaceRollup } from "@/hooks/useRollup";
 import { useGoals } from "@/hooks/useGoals";
+import { useProgrammesForSpace } from "@/hooks/useProgrammes";
 import { RollupKPIs } from "@/components/rollup/RollupKPIs";
+import { ProgrammeCard } from "@/components/rollup/ProgrammeCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ArrowRight, Folder } from "lucide-react";
 
@@ -20,6 +22,7 @@ export default function TeamDashboardPage({ params }: PageProps) {
   const { data: rollup, isLoading: rollupLoading } = useSpaceRollup(id);
   const { data: tree } = useSpaceTree(id);
   const { data: goals } = useGoals(id);
+  const { data: programmes } = useProgrammesForSpace(id);
 
   const children = tree?.children?.map((c) => c.space) ?? [];
   const workstreams = children.filter((c) => c.space_type === "workstream" || !c.space_type);
@@ -40,16 +43,24 @@ export default function TeamDashboardPage({ params }: PageProps) {
       <Sidebar />
       <main className="relative flex-1 overflow-y-auto p-4 md:p-8 animate-fade-in-up">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-400">
-              {space?.space_type ?? "Team"}
-            </p>
-            <h1 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em] mt-1">
-              {space?.name}
-            </h1>
-            {space?.description && (
-              <p className="mt-2 text-sm text-neutral-500 max-w-2xl">{space.description}</p>
-            )}
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-400">
+                {space?.space_type ?? "Team"}
+              </p>
+              <h1 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em] mt-1">
+                {space?.name}
+              </h1>
+              {space?.description && (
+                <p className="mt-2 text-sm text-neutral-500 max-w-2xl">{space.description}</p>
+              )}
+            </div>
+            <Link
+              href={`/spaces/${id}`}
+              className="text-xs text-primary-500 hover:text-primary-600 transition-colors flex items-center gap-1"
+            >
+              Open board <ArrowRight size={12} />
+            </Link>
           </div>
 
           {rollupLoading ? (
@@ -83,6 +94,19 @@ export default function TeamDashboardPage({ params }: PageProps) {
                           </div>
                         </div>
                       </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {programmes && programmes.length > 0 && (
+                <section>
+                  <h2 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-400 mb-4">
+                    Programmes This Team Contributes To
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {programmes.map((p) => (
+                      <ProgrammeCard key={p.id} programme={p} />
                     ))}
                   </div>
                 </section>

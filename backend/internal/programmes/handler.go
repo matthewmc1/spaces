@@ -143,6 +143,30 @@ func (h *Handler) HandleListSpaces(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, links)
 }
 
+// HandleListProgrammesForSpace handles GET /spaces/{id}/programmes — list programmes
+// this space contributes to or owns.
+func (h *Handler) HandleListProgrammesForSpace(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenant.FromContext(r.Context())
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	spaceID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		respond.Error(w, errors.Validation("invalid space id"))
+		return
+	}
+	programmes, err := h.svc.ListByTenantSpace(r.Context(), tenantID, spaceID)
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	if programmes == nil {
+		programmes = []Programme{}
+	}
+	respond.JSON(w, http.StatusOK, programmes)
+}
+
 func (h *Handler) HandleLinkSpace(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenant.FromContext(r.Context())
 	if err != nil {

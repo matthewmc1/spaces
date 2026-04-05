@@ -59,6 +59,7 @@ interface BoardProps {
   spaceId: string;
   spaceName?: string;
   spaceDescription?: string;
+  spaceType?: "organization" | "department" | "team" | "workstream";
   insightsOpen: boolean;
   onToggleInsights: () => void;
 }
@@ -67,6 +68,7 @@ export function Board({
   spaceId,
   spaceName = "",
   spaceDescription,
+  spaceType,
   insightsOpen,
   onToggleInsights,
 }: BoardProps) {
@@ -205,8 +207,10 @@ export function Board({
   return (
     <>
       <BoardHeader
+        spaceId={spaceId}
         spaceName={spaceName}
         spaceDescription={spaceDescription}
+        spaceType={spaceType}
         triageOpen={triageOpen}
         onToggleTriage={() => setTriageOpen(!triageOpen)}
         insightsOpen={insightsOpen}

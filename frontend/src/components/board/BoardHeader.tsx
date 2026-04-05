@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Inbox, PanelRight, Plus, Target } from "lucide-react";
+import { Inbox, PanelRight, Plus, Target, LayoutDashboard } from "lucide-react";
+import type { SpaceType } from "@/types/space";
 
 interface BoardHeaderProps {
+  spaceId: string;
   spaceName: string;
   spaceDescription?: string;
+  spaceType?: SpaceType;
   triageOpen: boolean;
   onToggleTriage: () => void;
   insightsOpen: boolean;
@@ -20,9 +24,18 @@ interface BoardHeaderProps {
   canEdit?: boolean;
 }
 
+const spaceTypeBadge: Record<SpaceType, { label: string; color: string }> = {
+  organization: { label: "Organization", color: "bg-primary-50 text-primary-700 border-primary-200" },
+  department:   { label: "Department",   color: "bg-sky-50 text-sky-700 border-sky-200" },
+  team:         { label: "Team",         color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  workstream:   { label: "Workstream",   color: "bg-neutral-50 text-neutral-600 border-neutral-200" },
+};
+
 export function BoardHeader({
+  spaceId,
   spaceName,
   spaceDescription,
+  spaceType,
   triageOpen,
   onToggleTriage,
   insightsOpen,
@@ -36,9 +49,19 @@ export function BoardHeader({
   totalColumns,
   canEdit = true,
 }: BoardHeaderProps) {
+  const badge = spaceType ? spaceTypeBadge[spaceType] : undefined;
+  const showTeamLink = spaceType === "team" || spaceType === "department" || spaceType === "organization";
+
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between pb-4 border-b border-neutral-200/60 mb-5">
       <div>
+        <div className="flex items-center gap-2 mb-1">
+          {badge && (
+            <span className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.color}`}>
+              {badge.label}
+            </span>
+          )}
+        </div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-neutral-800 tracking-[-0.02em]">
           {spaceName}
         </h1>
@@ -52,6 +75,13 @@ export function BoardHeader({
         )}
       </div>
       <div className="flex items-center flex-wrap gap-2">
+        {showTeamLink && (
+          <Link href={`/spaces/${spaceId}/team`}>
+            <Button variant="ghost" size="sm" icon={<LayoutDashboard className="w-4 h-4" />}>
+              Team View
+            </Button>
+          </Link>
+        )}
         {canEdit && (
           <Button
             size="sm"

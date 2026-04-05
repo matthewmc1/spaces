@@ -32,6 +32,7 @@ export default function SpacePage({
           spaceId={id}
           spaceName={space?.name}
           spaceDescription={space?.description}
+          spaceType={space?.space_type}
           insightsOpen={insightsOpen}
           onToggleInsights={() => setInsightsOpen(!insightsOpen)}
         />

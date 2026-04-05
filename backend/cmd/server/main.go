@@ -58,6 +58,12 @@ func main() {
 	bus := realtime.NewBus(redisClient)
 	hub := realtime.NewHub(bus)
 
+	// Dev verifier is always available as a fallback for the literal "dev-token".
+	devVerifier := auth.NewDevVerifier(
+		uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+	)
+
 	var tokenVerifier auth.TokenVerifier
 	if cfg.ClerkSecretKey != "" {
 		verifier, err := auth.NewClerkVerifier(ctx, cfg.ClerkPublishableKey)
@@ -65,13 +71,11 @@ func main() {
 			slog.Error("failed to init clerk verifier", "error", err)
 			os.Exit(1)
 		}
-		tokenVerifier = verifier
+		// Compound: accept dev-token for local testing, Clerk JWTs for real users.
+		tokenVerifier = auth.NewCompoundVerifier(verifier, devVerifier)
 	} else {
 		slog.Warn("no CLERK_SECRET_KEY set, using dev auth verifier")
-		tokenVerifier = auth.NewDevVerifier(
-			uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-			uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-		)
+		tokenVerifier = devVerifier
 	}
 
 	var resolver *auth.Resolver

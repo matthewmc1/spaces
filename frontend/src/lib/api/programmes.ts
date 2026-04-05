@@ -47,3 +47,7 @@ export function linkSpace(programmeId: string, input: LinkSpaceInput): Promise<P
 export function unlinkSpace(programmeId: string, spaceId: string): Promise<void> {
   return apiFetch<void>(`/programmes/${programmeId}/spaces/${spaceId}`, { method: "DELETE" });
 }
+
+export function listProgrammesForSpace(spaceId: string): Promise<Programme[]> {
+  return apiFetch<Programme[]>(`/spaces/${spaceId}/programmes`);
+}

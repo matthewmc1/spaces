@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 interface DialogProps {
@@ -16,6 +17,12 @@ interface DialogProps {
 const widthClasses = { sm: "max-w-sm", md: "max-w-md", lg: "max-w-lg" };
 
 export function Dialog({ open, onClose, title, description, children, footer, maxWidth = "md" }: DialogProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -23,15 +30,15 @@ export function Dialog({ open, onClose, title, description, children, footer, ma
     return () => document.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  const dialog = (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className={`relative bg-white rounded-[var(--radius-lg)] shadow-[var(--shadow-xl)] w-full ${widthClasses[maxWidth]} mx-4`}>
         <div className="flex items-start justify-between p-5 pb-0">
           <div>
-            <h2 className="text-lg font-semibold text-neutral-800">{title}</h2>
+            {title && <h2 className="text-lg font-semibold text-neutral-800">{title}</h2>}
             {description && <p className="mt-1 text-sm text-neutral-500">{description}</p>}
           </div>
           <button onClick={onClose} className="p-1 rounded-[var(--radius-sm)] text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors">
@@ -43,4 +50,6 @@ export function Dialog({ open, onClose, title, description, children, footer, ma
       </div>
     </div>
   );
+
+  return createPortal(dialog, document.body);
 }

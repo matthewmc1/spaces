@@ -4,7 +4,16 @@ import { useState } from "react";
 import { useCreateSpace } from "@/hooks/useSpaces";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import type { SpaceType } from "@/types/space";
+
+const SPACE_TYPE_OPTIONS = [
+  { value: "workstream", label: "Workstream — a piece of work" },
+  { value: "team", label: "Team — a group of people" },
+  { value: "department", label: "Department — a group of teams" },
+  { value: "organization", label: "Organization — the top-level" },
+];
 
 interface CreateSpaceDialogProps {
   parentSpaceId?: string;
@@ -24,6 +33,7 @@ export function CreateSpaceDialog({
 }: CreateSpaceDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [spaceType, setSpaceType] = useState<SpaceType>(parentSpaceId ? "workstream" : "team");
   const createSpace = useCreateSpace();
 
   const slug = toSlug(name);
@@ -36,6 +46,7 @@ export function CreateSpaceDialog({
       slug,
       description: description.trim() || undefined,
       parent_space_id: parentSpaceId,
+      space_type: spaceType,
     });
     onClose();
   };
@@ -60,6 +71,12 @@ export function CreateSpaceDialog({
           placeholder="My Space"
           disabled={createSpace.isPending}
           hint={slug ? `Slug: ${slug}` : undefined}
+        />
+        <Select
+          label="Type"
+          value={spaceType}
+          onChange={(e) => setSpaceType(e.target.value as SpaceType)}
+          options={SPACE_TYPE_OPTIONS}
         />
         <Input
           multiline

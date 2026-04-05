@@ -53,6 +53,10 @@ func clerkDomainFromPublishableKey(key string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid clerk publishable key prefix")
 	}
+	// Clerk publishable keys are base64 without padding — add padding if missing.
+	if pad := len(encoded) % 4; pad != 0 {
+		encoded += strings.Repeat("=", 4-pad)
+	}
 	decoded, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode publishable key: %w", err)
@@ -92,6 +96,25 @@ func (c *ClerkVerifier) Verify(ctx context.Context, token string) (*Claims, erro
 		Email:          email,
 		Role:           "member",
 	}, nil
+}
+
+// CompoundVerifier tries the DevVerifier for the literal "dev-token" value
+// and delegates to the primary verifier for everything else. This allows a
+// local dev path to keep working alongside a real Clerk verifier.
+type CompoundVerifier struct {
+	primary TokenVerifier
+	dev     *DevVerifier
+}
+
+func NewCompoundVerifier(primary TokenVerifier, dev *DevVerifier) *CompoundVerifier {
+	return &CompoundVerifier{primary: primary, dev: dev}
+}
+
+func (c *CompoundVerifier) Verify(ctx context.Context, token string) (*Claims, error) {
+	if token == "dev-token" && c.dev != nil {
+		return c.dev.Verify(ctx, token)
+	}
+	return c.primary.Verify(ctx, token)
 }
 
 // DevVerifier accepts any non-empty token and returns fixed claims.

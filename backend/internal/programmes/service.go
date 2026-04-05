@@ -67,3 +67,7 @@ func (s *Service) UnlinkSpace(ctx context.Context, tenantID, programmeID, spaceI
 func (s *Service) ListSpaces(ctx context.Context, tenantID, programmeID uuid.UUID) ([]ProgrammeSpace, error) {
 	return s.repo.ListSpaces(ctx, tenantID, programmeID)
 }
+
+func (s *Service) ListByTenantSpace(ctx context.Context, tenantID, spaceID uuid.UUID) ([]Programme, error) {
+	return s.repo.ListByTenantSpace(ctx, tenantID, spaceID)
+}

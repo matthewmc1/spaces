@@ -8,6 +8,7 @@ import {
   listProgrammeSpaces,
   linkSpace,
   unlinkSpace,
+  listProgrammesForSpace,
 } from "@/lib/api/programmes";
 import type { CreateProgrammeInput, UpdateProgrammeInput, LinkSpaceInput } from "@/types/programme";
 
@@ -69,5 +70,13 @@ export function useUnlinkSpace(programmeId: string) {
   return useMutation({
     mutationFn: (spaceId: string) => unlinkSpace(programmeId, spaceId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["programmes", programmeId, "spaces"] }),
+  });
+}
+
+export function useProgrammesForSpace(spaceId: string) {
+  return useQuery({
+    queryKey: ["programmes", "for-space", spaceId],
+    queryFn: () => listProgrammesForSpace(spaceId),
+    enabled: !!spaceId,
   });
 }
