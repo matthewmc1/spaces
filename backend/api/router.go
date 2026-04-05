@@ -19,6 +19,7 @@ type Config struct {
 	AuthMiddleware  *auth.Middleware
 	TenantMW        *tenant.Middleware
 	RBACService     *rbac.Service
+	AuthHandler     *auth.AuthHandler
 	SpaceHandler    *spaces.Handler
 	CardHandler     *cards.Handler
 	GoalHandler     *goals.Handler
@@ -39,6 +40,7 @@ func NewRouter(cfg Config) http.Handler {
 	requireMember := rbac.RequireRole(cfg.RBACService, "member")
 	requireAdmin := rbac.RequireRole(cfg.RBACService, "admin")
 
+	auth.RegisterRoutes(mux, cfg.AuthHandler, authMW, tenantMW, requireAdmin)
 	spaces.RegisterRoutes(mux, cfg.SpaceHandler, authMW, tenantMW, requireMember, requireAdmin)
 	cards.RegisterRoutes(mux, cfg.CardHandler, authMW, tenantMW, requireMember, requireAdmin)
 	goals.RegisterRoutes(mux, cfg.GoalHandler, authMW, tenantMW, requireMember, requireAdmin)

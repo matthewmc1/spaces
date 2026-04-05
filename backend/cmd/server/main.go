@@ -56,6 +56,10 @@ func main() {
 	rbacRepo := rbac.NewRepository(pool)
 	rbacSvc := rbac.NewService(rbacRepo)
 
+	authRepo := auth.NewRepository(pool)
+	authSvc := auth.NewAuthService(pool, authRepo)
+	authHandler := auth.NewAuthHandler(authSvc)
+
 	spaceRepo := spaces.NewRepository(pool)
 	cardRepo := cards.NewRepository(pool)
 	goalRepo := goals.NewRepository(pool)
@@ -78,6 +82,7 @@ func main() {
 		AuthMiddleware:  auth.NewMiddleware(tokenVerifier),
 		TenantMW:        tenant.NewMiddleware(),
 		RBACService:     rbacSvc,
+		AuthHandler:     authHandler,
 		SpaceHandler:    spaceHandler,
 		CardHandler:     cardHandler,
 		GoalHandler:     goalHandler,
