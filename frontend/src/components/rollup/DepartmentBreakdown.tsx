@@ -8,14 +8,15 @@ interface DepartmentBreakdownProps {
 }
 
 export function DepartmentBreakdown({ children, spaceNames }: DepartmentBreakdownProps) {
+  // Show spaces that have actual card data (workstreams with cards, or teams with rollup data)
   const items = (children ?? [])
-    .filter((c) => c.space_type === "department" || c.space_type === "team")
+    .filter((c) => c.total_cards > 0)
     .sort((a, b) => b.completion_pct - a.completion_pct)
-    .slice(0, 10);
+    .slice(0, 12);
 
   if (items.length === 0) {
     return (
-      <p className="text-sm text-neutral-400 italic">No department or team breakdown available.</p>
+      <p className="text-sm text-neutral-400 italic">No breakdown data available yet.</p>
     );
   }
 

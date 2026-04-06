@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl="/sign-in">
       <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}>
-        <body className="antialiased">
+        <body className="antialiased" suppressHydrationWarning>
           <QueryProvider>
             <ClerkTokenBridge />
             {children}
