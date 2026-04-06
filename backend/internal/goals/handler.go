@@ -193,6 +193,26 @@ func (h *Handler) HandleGetChain(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusOK, chain)
 }
 
+// HandleGetCardAlignment handles GET /cards/{id}/alignment
+func (h *Handler) HandleGetCardAlignment(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenant.FromContext(r.Context())
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	cardID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		respond.Error(w, errors.Validation("invalid card id"))
+		return
+	}
+	chains, err := h.svc.GetCardAlignment(r.Context(), tenantID, cardID)
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	respond.JSON(w, http.StatusOK, chains)
+}
+
 // HandleDeleteLink handles DELETE /goal-links/{id}
 func (h *Handler) HandleDeleteLink(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenant.FromContext(r.Context())

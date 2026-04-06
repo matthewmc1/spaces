@@ -120,3 +120,23 @@ func (s *Service) ListLinksByGoal(ctx context.Context, tenantID, goalID uuid.UUI
 func (s *Service) CountLinkedCards(ctx context.Context, tenantID, spaceID uuid.UUID) (linked int, total int, err error) {
 	return s.repo.CountLinkedCards(ctx, tenantID, spaceID)
 }
+
+// GetCardAlignment returns the alignment chains for all goals a card supports.
+func (s *Service) GetCardAlignment(ctx context.Context, tenantID, cardID uuid.UUID) ([]AlignmentChain, error) {
+	links, err := s.repo.ListLinksBySource(ctx, tenantID, "card", cardID)
+	if err != nil {
+		return nil, err
+	}
+	var chains []AlignmentChain
+	for _, link := range links {
+		chain, err := s.GetChain(ctx, tenantID, link.TargetGoalID)
+		if err != nil {
+			continue // best-effort — skip broken chains
+		}
+		chains = append(chains, *chain)
+	}
+	if chains == nil {
+		chains = []AlignmentChain{}
+	}
+	return chains, nil
+}
