@@ -48,7 +48,8 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 	// Fetch the space and all descendants from the materialized view
 	const q = `
 		SELECT space_id, space_type, total_cards, done_cards, in_flight, high_pri_open,
-		       avg_cycle_days, total_goals, linked_cards
+		       avg_cycle_days, total_goals, linked_cards,
+		       feature_count, defect_count, risk_count, debt_count
 		FROM space_rollup_stats
 		WHERE tenant_id = $1 AND path LIKE $2 || '%'`
 
@@ -77,9 +78,14 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 			AvgCycleDays float64
 			TotalGoals   int
 			LinkedCards  int
+			FeatureCount int
+			DefectCount  int
+			RiskCount    int
+			DebtCount    int
 		}
 		if err := rows.Scan(&row.SpaceID, &row.SpaceType, &row.TotalCards, &row.DoneCards,
-			&row.InFlight, &row.HighPriOpen, &row.AvgCycleDays, &row.TotalGoals, &row.LinkedCards); err != nil {
+			&row.InFlight, &row.HighPriOpen, &row.AvgCycleDays, &row.TotalGoals, &row.LinkedCards,
+			&row.FeatureCount, &row.DefectCount, &row.RiskCount, &row.DebtCount); err != nil {
 			return nil, err
 		}
 
@@ -89,6 +95,10 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 		result.HighPriOpen += row.HighPriOpen
 		result.TotalGoals += row.TotalGoals
 		result.LinkedCards += row.LinkedCards
+		result.Flow.FeatureCount += row.FeatureCount
+		result.Flow.DefectCount += row.DefectCount
+		result.Flow.RiskCount += row.RiskCount
+		result.Flow.DebtCount += row.DebtCount
 
 		if row.AvgCycleDays > 0 {
 			totalCycleSum += row.AvgCycleDays
@@ -119,6 +129,10 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 
 	if result.TotalCards > 0 {
 		result.Completion = float64(result.DoneCards) / float64(result.TotalCards) * 100
+		result.Flow.FeaturePct = float64(result.Flow.FeatureCount) / float64(result.TotalCards) * 100
+		result.Flow.DefectPct = float64(result.Flow.DefectCount) / float64(result.TotalCards) * 100
+		result.Flow.RiskPct = float64(result.Flow.RiskCount) / float64(result.TotalCards) * 100
+		result.Flow.DebtPct = float64(result.Flow.DebtCount) / float64(result.TotalCards) * 100
 	}
 	if result.InFlight > 0 {
 		result.AlignmentPct = float64(result.LinkedCards) / float64(result.InFlight) * 100
@@ -164,7 +178,8 @@ func (s *Service) GetProgrammeRollup(ctx context.Context, tenantID, programmeID 
 
 	const q = `
 		SELECT srs.space_id, srs.space_type, srs.total_cards, srs.done_cards, srs.in_flight,
-		       srs.high_pri_open, srs.avg_cycle_days, srs.total_goals, srs.linked_cards
+		       srs.high_pri_open, srs.avg_cycle_days, srs.total_goals, srs.linked_cards,
+		       srs.feature_count, srs.defect_count, srs.risk_count, srs.debt_count
 		FROM space_rollup_stats srs
 		JOIN programme_spaces ps ON ps.space_id = srs.space_id
 		WHERE srs.tenant_id = $1 AND ps.programme_id = $2`
@@ -190,9 +205,14 @@ func (s *Service) GetProgrammeRollup(ctx context.Context, tenantID, programmeID 
 			AvgCycleDays float64
 			TotalGoals   int
 			LinkedCards  int
+			FeatureCount int
+			DefectCount  int
+			RiskCount    int
+			DebtCount    int
 		}
 		if err := rows.Scan(&row.SpaceID, &row.SpaceType, &row.TotalCards, &row.DoneCards,
-			&row.InFlight, &row.HighPriOpen, &row.AvgCycleDays, &row.TotalGoals, &row.LinkedCards); err != nil {
+			&row.InFlight, &row.HighPriOpen, &row.AvgCycleDays, &row.TotalGoals, &row.LinkedCards,
+			&row.FeatureCount, &row.DefectCount, &row.RiskCount, &row.DebtCount); err != nil {
 			return nil, err
 		}
 
@@ -202,6 +222,10 @@ func (s *Service) GetProgrammeRollup(ctx context.Context, tenantID, programmeID 
 		result.HighPriOpen += row.HighPriOpen
 		result.TotalGoals += row.TotalGoals
 		result.LinkedCards += row.LinkedCards
+		result.Flow.FeatureCount += row.FeatureCount
+		result.Flow.DefectCount += row.DefectCount
+		result.Flow.RiskCount += row.RiskCount
+		result.Flow.DebtCount += row.DebtCount
 
 		if row.AvgCycleDays > 0 {
 			totalCycleSum += row.AvgCycleDays
@@ -229,6 +253,10 @@ func (s *Service) GetProgrammeRollup(ctx context.Context, tenantID, programmeID 
 
 	if result.TotalCards > 0 {
 		result.Completion = float64(result.DoneCards) / float64(result.TotalCards) * 100
+		result.Flow.FeaturePct = float64(result.Flow.FeatureCount) / float64(result.TotalCards) * 100
+		result.Flow.DefectPct = float64(result.Flow.DefectCount) / float64(result.TotalCards) * 100
+		result.Flow.RiskPct = float64(result.Flow.RiskCount) / float64(result.TotalCards) * 100
+		result.Flow.DebtPct = float64(result.Flow.DebtCount) / float64(result.TotalCards) * 100
 	}
 	if result.InFlight > 0 {
 		result.AlignmentPct = float64(result.LinkedCards) / float64(result.InFlight) * 100

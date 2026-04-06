@@ -2,6 +2,17 @@ package rollup
 
 import "github.com/google/uuid"
 
+type FlowDistribution struct {
+	FeatureCount int     `json:"feature_count"`
+	DefectCount  int     `json:"defect_count"`
+	RiskCount    int     `json:"risk_count"`
+	DebtCount    int     `json:"debt_count"`
+	FeaturePct   float64 `json:"feature_pct"`
+	DefectPct    float64 `json:"defect_pct"`
+	RiskPct      float64 `json:"risk_pct"`
+	DebtPct      float64 `json:"debt_pct"`
+}
+
 type SpaceRollup struct {
 	SpaceID        uuid.UUID             `json:"space_id"`
 	TenantID       uuid.UUID             `json:"tenant_id"`
@@ -15,6 +26,7 @@ type SpaceRollup struct {
 	TotalGoals     int                   `json:"total_goals"`
 	LinkedCards    int                   `json:"linked_cards"`
 	AlignmentPct   float64               `json:"alignment_pct"`
+	Flow           FlowDistribution      `json:"flow_distribution"`
 	ChildBreakdown []SpaceRollupSummary  `json:"child_breakdown,omitempty"`
 }
 
@@ -40,5 +52,6 @@ type ProgrammeRollup struct {
 	TotalGoals   int                  `json:"total_goals"`
 	LinkedCards  int                  `json:"linked_cards"`
 	AlignmentPct float64              `json:"alignment_pct"`
+	Flow         FlowDistribution     `json:"flow_distribution"`
 	Members      []SpaceRollupSummary `json:"members"`
 }
