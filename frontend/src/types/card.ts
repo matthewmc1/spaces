@@ -7,6 +7,8 @@ export type Column =
   | "review"
   | "done";
 
+export type WorkType = "feature" | "defect" | "risk" | "debt";
+
 export const COLUMNS: {
   key: Column;
   label: string;
@@ -35,6 +37,7 @@ export interface Card {
   effort_estimate?: number;
   due_date?: string;
   labels: string[];
+  work_type: WorkType;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -49,6 +52,7 @@ export interface CreateCardInput {
   due_date?: string;
   labels?: string[];
   assignee_id?: string;
+  work_type?: WorkType;
 }
 
 export interface MoveCardInput {

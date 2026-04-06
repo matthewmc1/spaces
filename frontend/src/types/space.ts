@@ -15,6 +15,8 @@ export interface Space {
   owner_id: string;
   visibility: "public" | "private" | "restricted";
   space_type: SpaceType;
+  wip_limits: Record<string, number>;
+  capacity_targets: Record<string, number>;
   status: SpaceStatus;
   created_at: string;
   updated_at: string;
@@ -44,4 +46,6 @@ export interface UpdateSpaceInput {
   visibility?: string;
   status?: SpaceStatus;
   space_type?: SpaceType;
+  wip_limits?: Record<string, number>;
+  capacity_targets?: Record<string, number>;
 }
