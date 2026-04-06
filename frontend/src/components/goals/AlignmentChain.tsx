@@ -86,7 +86,7 @@ export function AlignmentChainView({ chains }: AlignmentChainProps) {
       {chains.map((chain, idx) => (
         <div key={idx}>
           {/* Ancestors (top-level first — reverse since API returns nearest-first) */}
-          {[...chain.ancestors].reverse().map((node) => (
+          {[...(chain.ancestors ?? [])].reverse().map((node) => (
             <div key={node.id}>
               <ChainNodeCard node={node} />
               <Connector />
@@ -97,11 +97,11 @@ export function AlignmentChainView({ chains }: AlignmentChainProps) {
           <ChainNodeCard node={chain.goal} isFocal />
 
           {/* Supporters */}
-          {chain.supporters.length > 0 && (
+          {(chain.supporters ?? []).length > 0 && (
             <>
               <Connector />
               <div className="space-y-2 pl-4 border-l-2 border-neutral-200 ml-3">
-                {chain.supporters.map((node) => (
+                {(chain.supporters ?? []).map((node) => (
                   <ChainNodeCard key={node.id} node={node} />
                 ))}
               </div>
