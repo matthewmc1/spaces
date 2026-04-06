@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listGoals, createGoal, updateGoal, deleteGoal, createGoalLink, deleteGoalLink } from "@/lib/api/goals";
+import { listGoals, createGoal, updateGoal, deleteGoal, createGoalLink, deleteGoalLink, getGoalChain, getCardAlignment } from "@/lib/api/goals";
 import type { CreateGoalInput, UpdateGoalInput, CreateGoalLinkInput } from "@/types/goal";
 
 export function useGoals(spaceId: string) {
@@ -49,5 +49,21 @@ export function useDeleteGoalLink(spaceId: string) {
   return useMutation({
     mutationFn: (linkId: string) => deleteGoalLink(linkId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["goals", spaceId] }),
+  });
+}
+
+export function useGoalChain(goalId: string) {
+  return useQuery({
+    queryKey: ["goals", goalId, "chain"],
+    queryFn: () => getGoalChain(goalId),
+    enabled: !!goalId,
+  });
+}
+
+export function useCardAlignment(cardId: string) {
+  return useQuery({
+    queryKey: ["cards", cardId, "alignment"],
+    queryFn: () => getCardAlignment(cardId),
+    enabled: !!cardId,
   });
 }

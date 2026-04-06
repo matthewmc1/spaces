@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { Goal, GoalLink, CreateGoalInput, UpdateGoalInput, CreateGoalLinkInput } from "@/types/goal";
+import type { Goal, GoalLink, CreateGoalInput, UpdateGoalInput, CreateGoalLinkInput, AlignmentChain } from "@/types/goal";
 
 export function listGoals(spaceId: string): Promise<Goal[]> {
   return apiFetch<Goal[]>(`/spaces/${spaceId}/goals`);
@@ -32,4 +32,12 @@ export function createGoalLink(goalId: string, input: CreateGoalLinkInput): Prom
 
 export function deleteGoalLink(linkId: string): Promise<void> {
   return apiFetch<void>(`/goal-links/${linkId}`, { method: "DELETE" });
+}
+
+export function getGoalChain(goalId: string): Promise<AlignmentChain> {
+  return apiFetch<AlignmentChain>(`/goals/${goalId}/chain`);
+}
+
+export function getCardAlignment(cardId: string): Promise<AlignmentChain[]> {
+  return apiFetch<AlignmentChain[]>(`/cards/${cardId}/alignment`);
 }

@@ -23,8 +23,9 @@ import {
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
 import { WORK_TYPES } from "@/types/flow";
-import { useGoals, useCreateGoalLink, useDeleteGoalLink } from "@/hooks/useGoals";
+import { useGoals, useCreateGoalLink, useDeleteGoalLink, useCardAlignment } from "@/hooks/useGoals";
 import type { Goal, GoalLink } from "@/types/goal";
+import { AlignmentChainView } from "@/components/goals/AlignmentChain";
 import {
   useCardLinks,
   useCreateCardLink,
@@ -138,6 +139,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
   const createCardLink = useCreateCardLink(card?.id ?? "");
   const deleteCardLinkMut = useDeleteCardLink(card?.id ?? "");
   const { data: integrations } = useIntegrations();
+  const { data: alignment } = useCardAlignment(card?.id ?? "");
 
   useEffect(() => {
     if (card) {
@@ -472,6 +474,12 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
               </>
             )}
           </div>
+        </div>
+
+        {/* Alignment Chain */}
+        <div>
+          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Alignment Chain</p>
+          <AlignmentChainView chains={alignment ?? []} />
         </div>
 
         {/* Linked Resources */}

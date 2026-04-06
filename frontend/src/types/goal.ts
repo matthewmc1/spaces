@@ -41,3 +41,23 @@ export interface CreateGoalLinkInput {
   source_id: string;
   link_type: "supports" | "drives" | "blocks";
 }
+
+export interface ChainNode {
+  id: string;
+  type: "goal" | "card";
+  title: string;
+  status?: string;
+  space_id: string;
+  space_name: string;
+  space_type: string;
+  link_type?: string;
+  priority?: string;
+  column_name?: string;
+  work_type?: string;
+}
+
+export interface AlignmentChain {
+  goal: ChainNode;
+  ancestors: ChainNode[];
+  supporters: ChainNode[];
+}
