@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -50,6 +51,7 @@ func (h *Handler) HandleListCards(w http.ResponseWriter, r *http.Request) {
 
 	cards, nextCursor, err := h.svc.ListBySpace(r.Context(), tenantID, spaceID, filters, page)
 	if err != nil {
+		slog.Error("ListCards failed", "error", err, "space_id", spaceID)
 		respond.Error(w, err)
 		return
 	}
