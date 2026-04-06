@@ -113,6 +113,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
   const [goalLinkType, setGoalLinkType] = useState<GoalLink["link_type"]>("supports");
   const [localLinks, setLocalLinks] = useState<(GoalLink & { goalTitle: string })[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeTab, setActiveTab] = useState<"details" | "alignment" | "integrations">("details");
 
   // Inline editable fields
   const [title, setTitle] = useState("");
@@ -360,6 +361,29 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
           )}
         </div>
 
+        {/* Tabs */}
+        <div>
+          <div className="flex gap-1 border-b border-neutral-200 mb-4">
+            {(["details", "alignment", "integrations"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors border-b-2 -mb-px ${
+                  activeTab === t
+                    ? "border-primary-500 text-primary-700"
+                    : "border-transparent text-neutral-400 hover:text-neutral-600"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* === Details Tab === */}
+        {activeTab === "details" && (
+        <div className="space-y-5">
+
         {/* Subtasks */}
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -405,6 +429,47 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
             <Button variant="ghost" size="sm" icon={<Plus className="w-3 h-3" />} onClick={addSubtask}>Add</Button>
           </div>
         </div>
+
+        {/* Move to column */}
+        <div>
+          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Move to</p>
+          <div className="relative inline-block">
+            <Button
+              variant="secondary"
+              size="sm"
+              iconRight={<ChevronDown className="w-3 h-3" />}
+              onClick={() => setMoveDropdownOpen((v) => !v)}
+            >
+              {currentColumn?.label ?? card.column_name}
+            </Button>
+            {moveDropdownOpen && (
+              <div className="absolute z-10 mt-1 left-0 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1 min-w-[160px]">
+                {COLUMNS.filter((c) => c.key !== card.column_name).map((col) => (
+                  <button
+                    key={col.key}
+                    type="button"
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                    onClick={() => {
+                      onMove?.(card.id, col.key as Column, Date.now());
+                      setMoveDropdownOpen(false);
+                      onClose();
+                    }}
+                  >
+                    <ArrowRight className="w-3 h-3 text-neutral-400" />
+                    {col.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        </div>
+        )}
+
+        {/* === Alignment Tab === */}
+        {activeTab === "alignment" && (
+        <div className="space-y-5">
 
         {/* Goal Links */}
         <div>
@@ -481,6 +546,13 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
           <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Alignment Chain</p>
           <AlignmentChainView chains={alignment ?? []} />
         </div>
+
+        </div>
+        )}
+
+        {/* === Integrations Tab === */}
+        {activeTab === "integrations" && (
+        <div className="space-y-5">
 
         {/* Linked Resources */}
         <div>
@@ -598,41 +670,10 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
           )}
         </div>
 
-        {/* Move to column */}
-        <div>
-          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Move to</p>
-          <div className="relative inline-block">
-            <Button
-              variant="secondary"
-              size="sm"
-              iconRight={<ChevronDown className="w-3 h-3" />}
-              onClick={() => setMoveDropdownOpen((v) => !v)}
-            >
-              {currentColumn?.label ?? card.column_name}
-            </Button>
-            {moveDropdownOpen && (
-              <div className="absolute z-10 mt-1 left-0 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1 min-w-[160px]">
-                {COLUMNS.filter((c) => c.key !== card.column_name).map((col) => (
-                  <button
-                    key={col.key}
-                    type="button"
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                    onClick={() => {
-                      onMove?.(card.id, col.key as Column, Date.now());
-                      setMoveDropdownOpen(false);
-                      onClose();
-                    }}
-                  >
-                    <ArrowRight className="w-3 h-3 text-neutral-400" />
-                    {col.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
+        )}
 
-        {/* Metadata */}
+        {/* Metadata — always visible */}
         <div className="border-t border-neutral-100 pt-4">
           <div className="flex gap-6 text-xs text-neutral-400">
             <span>Created {new Date(card.created_at).toLocaleDateString()}</span>
