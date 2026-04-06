@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Inbox, PanelRight, Plus, Target, LayoutDashboard } from "lucide-react";
+import { Inbox, PanelRight, Plus, Settings2, Target, LayoutDashboard } from "lucide-react";
 import type { SpaceType } from "@/types/space";
 
 interface BoardHeaderProps {
@@ -16,6 +16,8 @@ interface BoardHeaderProps {
   onToggleInsights: () => void;
   goalsOpen: boolean;
   onToggleGoals: () => void;
+  settingsOpen: boolean;
+  onToggleSettings: () => void;
   onAddCard: () => void;
   columnConfigSlot: React.ReactNode;
   groupingSlot?: React.ReactNode;
@@ -42,6 +44,8 @@ export function BoardHeader({
   onToggleInsights,
   goalsOpen,
   onToggleGoals,
+  settingsOpen,
+  onToggleSettings,
   onAddCard,
   columnConfigSlot,
   groupingSlot,
@@ -109,6 +113,14 @@ export function BoardHeader({
           onClick={onToggleGoals}
         >
           Goals
+        </Button>
+        <Button
+          variant={settingsOpen ? "secondary" : "ghost"}
+          size="sm"
+          icon={<Settings2 className="w-4 h-4" />}
+          onClick={onToggleSettings}
+        >
+          Settings
         </Button>
         <Button
           variant={insightsOpen ? "secondary" : "ghost"}

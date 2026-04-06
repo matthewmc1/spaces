@@ -31,6 +31,7 @@ import { CreateCardDialog } from "./CreateCardDialog";
 import { CardDetailDialog } from "./CardDetailDialog";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { GoalsList } from "@/components/goals/GoalsList";
+import { SpaceSettingsPanel } from "@/components/spaces/SpaceSettingsPanel";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((c) => c.key));
 
@@ -86,6 +87,7 @@ export function Board({
   const [showCreateCard, setShowCreateCard] = useState(false);
   const [triageOpen, setTriageOpen] = useState(false);
   const [goalsOpen, setGoalsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>("none");
 
   // Real-time updates. Uses "dev-token" until Clerk auth is wired in Task 11.
@@ -219,6 +221,8 @@ export function Board({
         onToggleInsights={onToggleInsights}
         goalsOpen={goalsOpen}
         onToggleGoals={() => setGoalsOpen(!goalsOpen)}
+        settingsOpen={settingsOpen}
+        onToggleSettings={() => setSettingsOpen(!settingsOpen)}
         onAddCard={() => setShowCreateCard(true)}
         totalCards={totalCards}
         totalColumns={totalColumns}
@@ -275,6 +279,11 @@ export function Board({
             spaceId={spaceId}
             open={goalsOpen}
             onClose={() => setGoalsOpen(false)}
+          />
+          <SpaceSettingsPanel
+            spaceId={spaceId}
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
           />
         </div>
         <DragOverlay dropAnimation={{
