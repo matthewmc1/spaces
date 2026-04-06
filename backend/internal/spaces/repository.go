@@ -36,7 +36,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, ownerID uuid.UUID, 
 	const q = `
 		INSERT INTO spaces (tenant_id, parent_space_id, name, description, slug, icon, color, path, owner_id, visibility, space_type, status)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE(NULLIF($10, ''), 'public'), COALESCE(NULLIF($11, ''), 'workstream'), 'on_track')
-		RETURNING id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at`
+		RETURNING id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at`
 
 	row := r.db.QueryRow(ctx, q,
 		tenantID,
@@ -57,7 +57,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, ownerID uuid.UUID, 
 
 func (r *pgRepository) GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at
 		FROM spaces
 		WHERE id = $1 AND tenant_id = $2`
 
@@ -75,17 +75,19 @@ func (r *pgRepository) GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Sp
 func (r *pgRepository) Update(ctx context.Context, tenantID, id uuid.UUID, input UpdateInput) (*Space, error) {
 	const q = `
 		UPDATE spaces SET
-			name        = COALESCE($3, name),
-			description = COALESCE($4, description),
-			icon        = COALESCE($5, icon),
-			color       = COALESCE($6, color),
-			visibility  = COALESCE($7, visibility),
-			status      = COALESCE($8, status),
-			space_type  = COALESCE($9, space_type),
-			path        = COALESCE($10, path),
-			updated_at  = NOW()
+			name             = COALESCE($3, name),
+			description      = COALESCE($4, description),
+			icon             = COALESCE($5, icon),
+			color            = COALESCE($6, color),
+			visibility       = COALESCE($7, visibility),
+			status           = COALESCE($8, status),
+			space_type       = COALESCE($9, space_type),
+			path             = COALESCE($10, path),
+			wip_limits       = COALESCE($11, wip_limits),
+			capacity_targets = COALESCE($12, capacity_targets),
+			updated_at       = NOW()
 		WHERE id = $1 AND tenant_id = $2
-		RETURNING id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at`
+		RETURNING id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at`
 
 	row := r.db.QueryRow(ctx, q,
 		id,
@@ -98,6 +100,8 @@ func (r *pgRepository) Update(ctx context.Context, tenantID, id uuid.UUID, input
 		input.Status,
 		input.SpaceType,
 		input.Path,
+		input.WipLimits,
+		input.CapacityTargets,
 	)
 
 	s, err := scanSpace(row)
@@ -125,7 +129,7 @@ func (r *pgRepository) Delete(ctx context.Context, tenantID, id uuid.UUID) error
 
 func (r *pgRepository) ListAll(ctx context.Context, tenantID uuid.UUID) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1
 		ORDER BY path`
@@ -139,7 +143,7 @@ func (r *pgRepository) ListAll(ctx context.Context, tenantID uuid.UUID) ([]Space
 
 func (r *pgRepository) ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1 AND parent_space_id IS NULL
 		ORDER BY name`
@@ -153,7 +157,7 @@ func (r *pgRepository) ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Spa
 
 func (r *pgRepository) ListChildren(ctx context.Context, tenantID, parentID uuid.UUID) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1 AND parent_space_id = $2
 		ORDER BY name`
@@ -167,7 +171,7 @@ func (r *pgRepository) ListChildren(ctx context.Context, tenantID, parentID uuid
 
 func (r *pgRepository) GetSubtree(ctx context.Context, tenantID uuid.UUID, rootPath string) ([]Space, error) {
 	const q = `
-		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, status, created_at, updated_at
+		SELECT id, tenant_id, parent_space_id, name, COALESCE(description, ''), slug, COALESCE(icon, ''), COALESCE(color, ''), path, owner_id, visibility, space_type, COALESCE(wip_limits, '{}'), COALESCE(capacity_targets, '{}'), status, created_at, updated_at
 		FROM spaces
 		WHERE tenant_id = $1 AND path LIKE $2
 		ORDER BY path`
@@ -195,6 +199,8 @@ func scanSpace(row pgx.Row) (*Space, error) {
 		&s.OwnerID,
 		&s.Visibility,
 		&s.SpaceType,
+		&s.WipLimits,
+		&s.CapacityTargets,
 		&s.Status,
 		&s.CreatedAt,
 		&s.UpdatedAt,

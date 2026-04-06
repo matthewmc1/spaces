@@ -35,11 +35,11 @@ func NewRepository(db *pgxpool.Pool) Repository {
 
 func (r *pgRepository) Create(ctx context.Context, tenantID, spaceID, createdBy uuid.UUID, input CreateInput) (*Card, error) {
 	const q = `
-		INSERT INTO cards (tenant_id, space_id, created_by, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels)
+		INSERT INTO cards (tenant_id, space_id, created_by, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, work_type)
 		VALUES ($1, $2, $3, $4, $5, $6,
 			COALESCE($7, (SELECT COALESCE(MAX(position), 0) + 1000 FROM cards WHERE space_id = $2 AND column_name = 'inbox')),
-			$8, $9, $10, $11, $12)
-		RETURNING id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, created_by, created_at, updated_at, moved_at`
+			$8, $9, $10, $11, $12, COALESCE(NULLIF($13, ''), 'feature'))
+		RETURNING id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, work_type, created_by, created_at, updated_at, moved_at`
 
 	labels := input.Labels
 	if labels == nil {
@@ -64,6 +64,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, spaceID, createdBy 
 		input.EffortEstimate,
 		input.DueDate,
 		labels,
+		input.WorkType,
 	)
 
 	return scanCard(row)
@@ -71,7 +72,7 @@ func (r *pgRepository) Create(ctx context.Context, tenantID, spaceID, createdBy 
 
 func (r *pgRepository) GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Card, error) {
 	const q = `
-		SELECT id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, created_by, created_at, updated_at, moved_at
+		SELECT id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, work_type, created_by, created_at, updated_at, moved_at
 		FROM cards
 		WHERE id = $1 AND tenant_id = $2`
 
@@ -96,9 +97,10 @@ func (r *pgRepository) Update(ctx context.Context, tenantID, id uuid.UUID, input
 			due_date        = COALESCE($7, due_date),
 			labels          = COALESCE($8, labels),
 			assignee_id     = COALESCE($9, assignee_id),
+			work_type       = COALESCE($10, work_type),
 			updated_at      = NOW()
 		WHERE id = $1 AND tenant_id = $2
-		RETURNING id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, created_by, created_at, updated_at, moved_at`
+		RETURNING id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, work_type, created_by, created_at, updated_at, moved_at`
 
 	row := r.db.QueryRow(ctx, q,
 		id,
@@ -110,6 +112,7 @@ func (r *pgRepository) Update(ctx context.Context, tenantID, id uuid.UUID, input
 		input.DueDate,
 		input.Labels,
 		input.AssigneeID,
+		input.WorkType,
 	)
 
 	c, err := scanCard(row)
@@ -130,7 +133,7 @@ func (r *pgRepository) Move(ctx context.Context, tenantID, id uuid.UUID, column 
 			moved_at    = NOW(),
 			updated_at  = NOW()
 		WHERE id = $1 AND tenant_id = $2
-		RETURNING id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, created_by, created_at, updated_at, moved_at`
+		RETURNING id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, work_type, created_by, created_at, updated_at, moved_at`
 
 	row := r.db.QueryRow(ctx, q, id, tenantID, column, position)
 	c, err := scanCard(row)
@@ -194,7 +197,7 @@ func (r *pgRepository) ListBySpace(ctx context.Context, tenantID, spaceID uuid.U
 	limit := page.Limit + 1
 
 	q := fmt.Sprintf(`
-		SELECT id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, created_by, created_at, updated_at, moved_at
+		SELECT id, space_id, tenant_id, title, description, column_name, position, assignee_id, priority, effort_estimate, due_date, labels, work_type, created_by, created_at, updated_at, moved_at
 		FROM cards
 		%s
 		ORDER BY position ASC
@@ -243,6 +246,7 @@ func scanCard(row pgx.Row) (*Card, error) {
 		&c.EffortEstimate,
 		&c.DueDate,
 		&c.Labels,
+		&c.WorkType,
 		&c.CreatedBy,
 		&c.CreatedAt,
 		&c.UpdatedAt,
@@ -272,6 +276,7 @@ func scanCardFromRows(rows pgx.Rows) (*Card, error) {
 		&c.EffortEstimate,
 		&c.DueDate,
 		&c.Labels,
+		&c.WorkType,
 		&c.CreatedBy,
 		&c.CreatedAt,
 		&c.UpdatedAt,

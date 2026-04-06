@@ -31,6 +31,7 @@ type Card struct {
 	EffortEstimate *int       `json:"effort_estimate,omitempty"`
 	DueDate        *time.Time `json:"due_date,omitempty"`
 	Labels         []string   `json:"labels"`
+	WorkType       string     `json:"work_type"`
 	CreatedBy      uuid.UUID  `json:"created_by"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
@@ -44,6 +45,7 @@ type CreateInput struct {
 	EffortEstimate *int       `json:"effort_estimate,omitempty"`
 	DueDate        *time.Time `json:"due_date,omitempty"`
 	Labels         []string   `json:"labels,omitempty"`
+	WorkType       string     `json:"work_type,omitempty"`
 	AssigneeID     *uuid.UUID `json:"assignee_id,omitempty"`
 }
 
@@ -54,6 +56,7 @@ type UpdateInput struct {
 	EffortEstimate *int       `json:"effort_estimate,omitempty"`
 	DueDate        *time.Time `json:"due_date,omitempty"`
 	Labels         []string   `json:"labels,omitempty"`
+	WorkType       *string    `json:"work_type,omitempty"`
 	AssigneeID     *uuid.UUID `json:"assignee_id,omitempty"`
 }
 

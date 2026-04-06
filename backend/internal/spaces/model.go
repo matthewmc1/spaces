@@ -1,6 +1,7 @@
 package spaces
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,8 +19,10 @@ type Space struct {
 	Path          string     `json:"path"`
 	OwnerID       uuid.UUID  `json:"owner_id"`
 	Visibility    string     `json:"visibility"`
-	SpaceType     string     `json:"space_type"`
-	Status        string     `json:"status"`
+	SpaceType       string          `json:"space_type"`
+	WipLimits       json.RawMessage `json:"wip_limits"`
+	CapacityTargets json.RawMessage `json:"capacity_targets"`
+	Status          string          `json:"status"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }
@@ -42,8 +45,10 @@ type UpdateInput struct {
 	Color       *string `json:"color,omitempty"`
 	Visibility  *string `json:"visibility,omitempty"`
 	Status      *string `json:"status,omitempty"`
-	SpaceType   *string `json:"space_type,omitempty"`
-	Path        *string `json:"-"` // internal use only — not exposed via API
+	SpaceType       *string          `json:"space_type,omitempty"`
+	WipLimits       *json.RawMessage `json:"wip_limits,omitempty"`
+	CapacityTargets *json.RawMessage `json:"capacity_targets,omitempty"`
+	Path            *string          `json:"-"` // internal use only — not exposed via API
 }
 
 type TreeNode struct {

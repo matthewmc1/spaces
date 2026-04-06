@@ -62,6 +62,14 @@ func (m *mockRepository) ListChildren(ctx context.Context, tenantID, parentID uu
 	return nil, args.Error(1)
 }
 
+func (m *mockRepository) ListAll(ctx context.Context, tenantID uuid.UUID) ([]spaces.Space, error) {
+	args := m.Called(ctx, tenantID)
+	if s, ok := args.Get(0).([]spaces.Space); ok {
+		return s, args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
 func (m *mockRepository) GetSubtree(ctx context.Context, tenantID uuid.UUID, rootPath string) ([]spaces.Space, error) {
 	args := m.Called(ctx, tenantID, rootPath)
 	if s, ok := args.Get(0).([]spaces.Space); ok {
