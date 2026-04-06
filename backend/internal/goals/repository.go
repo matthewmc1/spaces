@@ -24,6 +24,10 @@ type Repository interface {
 	ListLinksByGoal(ctx context.Context, tenantID, goalID uuid.UUID) ([]GoalLink, error)
 	ListLinksBySource(ctx context.Context, tenantID uuid.UUID, sourceType string, sourceID uuid.UUID) ([]GoalLink, error)
 	CountLinkedCards(ctx context.Context, tenantID, spaceID uuid.UUID) (linked int, total int, err error)
+
+	GetGoalWithSpace(ctx context.Context, tenantID, goalID uuid.UUID) (*ChainNode, error)
+	GetChainUp(ctx context.Context, tenantID, goalID uuid.UUID) ([]ChainNode, error)
+	GetChainDown(ctx context.Context, tenantID, goalID uuid.UUID) ([]ChainNode, error)
 }
 
 type pgRepository struct {
@@ -207,6 +211,110 @@ func (r *pgRepository) CountLinkedCards(ctx context.Context, tenantID, spaceID u
 		return 0, 0, err
 	}
 	return linked, total, nil
+}
+
+// GetGoalWithSpace returns a ChainNode for a single goal joined with its space.
+func (r *pgRepository) GetGoalWithSpace(ctx context.Context, tenantID, goalID uuid.UUID) (*ChainNode, error) {
+	const q = `
+		SELECT g.id, g.title, g.status, g.space_id, COALESCE(s.name, ''), COALESCE(s.space_type, '')
+		FROM goals g
+		JOIN spaces s ON s.id = g.space_id
+		WHERE g.id = $1 AND g.tenant_id = $2`
+
+	var n ChainNode
+	err := r.db.QueryRow(ctx, q, goalID, tenantID).Scan(
+		&n.ID, &n.Title, &n.Status, &n.SpaceID, &n.SpaceName, &n.SpaceType,
+	)
+	if err != nil {
+		return nil, err
+	}
+	n.Type = "goal"
+	return &n, nil
+}
+
+// GetChainUp walks goal_links upward from goalID, returning the ancestor chain.
+func (r *pgRepository) GetChainUp(ctx context.Context, tenantID, goalID uuid.UUID) ([]ChainNode, error) {
+	var ancestors []ChainNode
+	currentID := goalID
+	visited := make(map[uuid.UUID]bool)
+
+	for {
+		if visited[currentID] {
+			break // prevent cycles
+		}
+		visited[currentID] = true
+
+		const q = `
+			SELECT g.id, g.title, g.status, g.space_id, COALESCE(s.name, ''), COALESCE(s.space_type, ''), gl.link_type
+			FROM goal_links gl
+			JOIN goals g ON g.id = gl.target_goal_id
+			JOIN spaces s ON s.id = g.space_id
+			WHERE gl.source_type = 'goal' AND gl.source_id = $1 AND gl.tenant_id = $2`
+
+		var node ChainNode
+		err := r.db.QueryRow(ctx, q, currentID, tenantID).Scan(
+			&node.ID, &node.Title, &node.Status, &node.SpaceID, &node.SpaceName, &node.SpaceType, &node.LinkType,
+		)
+		if err != nil {
+			break // no more parents
+		}
+		node.Type = "goal"
+		ancestors = append(ancestors, node)
+		currentID = node.ID
+	}
+
+	return ancestors, nil
+}
+
+// GetChainDown returns all supporters of goalID — sub-goals and cards linked to it.
+func (r *pgRepository) GetChainDown(ctx context.Context, tenantID, goalID uuid.UUID) ([]ChainNode, error) {
+	// Sub-goals
+	const goalQ = `
+		SELECT g.id, g.title, g.status, g.space_id, COALESCE(s.name, ''), COALESCE(s.space_type, ''), gl.link_type
+		FROM goal_links gl
+		JOIN goals g ON g.id = gl.source_id
+		JOIN spaces s ON s.id = g.space_id
+		WHERE gl.target_goal_id = $1 AND gl.source_type = 'goal' AND gl.tenant_id = $2`
+
+	// Cards
+	const cardQ = `
+		SELECT c.id, c.title, c.column_name, c.space_id, COALESCE(s.name, ''), COALESCE(s.space_type, ''), gl.link_type, COALESCE(c.priority, ''), COALESCE(c.work_type, 'feature')
+		FROM goal_links gl
+		JOIN cards c ON c.id = gl.source_id
+		JOIN spaces s ON s.id = c.space_id
+		WHERE gl.target_goal_id = $1 AND gl.source_type = 'card' AND gl.tenant_id = $2`
+
+	var supporters []ChainNode
+
+	rows, err := r.db.Query(ctx, goalQ, goalID, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var n ChainNode
+		if err := rows.Scan(&n.ID, &n.Title, &n.Status, &n.SpaceID, &n.SpaceName, &n.SpaceType, &n.LinkType); err != nil {
+			return nil, err
+		}
+		n.Type = "goal"
+		supporters = append(supporters, n)
+	}
+
+	rows2, err := r.db.Query(ctx, cardQ, goalID, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows2.Close()
+	for rows2.Next() {
+		var n ChainNode
+		if err := rows2.Scan(&n.ID, &n.Title, &n.ColumnName, &n.SpaceID, &n.SpaceName, &n.SpaceType, &n.LinkType, &n.Priority, &n.WorkType); err != nil {
+			return nil, err
+		}
+		n.Type = "card"
+		supporters = append(supporters, n)
+	}
+
+	return supporters, nil
 }
 
 // scanGoal scans a single goal row.

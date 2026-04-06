@@ -13,6 +13,7 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.H
 		return authMW(tenantMW(requireAdmin(fn)))
 	}
 
+	mux.Handle("GET /goals/{id}/chain", read(h.HandleGetChain))
 	mux.Handle("GET /spaces/{id}/goals", read(h.HandleListGoals))
 	mux.Handle("POST /spaces/{id}/goals", write(h.HandleCreateGoal))
 	mux.Handle("PUT /goals/{id}", write(h.HandleUpdateGoal))

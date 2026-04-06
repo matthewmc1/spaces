@@ -173,6 +173,26 @@ func (h *Handler) HandleCreateLink(w http.ResponseWriter, r *http.Request) {
 	respond.JSON(w, http.StatusCreated, link)
 }
 
+// HandleGetChain handles GET /goals/{id}/chain
+func (h *Handler) HandleGetChain(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenant.FromContext(r.Context())
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	goalID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		respond.Error(w, errors.Validation("invalid goal id"))
+		return
+	}
+	chain, err := h.svc.GetChain(r.Context(), tenantID, goalID)
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	respond.JSON(w, http.StatusOK, chain)
+}
+
 // HandleDeleteLink handles DELETE /goal-links/{id}
 func (h *Handler) HandleDeleteLink(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenant.FromContext(r.Context())
