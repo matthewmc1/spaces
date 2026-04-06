@@ -69,3 +69,17 @@ func (h *Handler) HandleProgrammeRollup(w http.ResponseWriter, r *http.Request) 
 	}
 	respond.JSON(w, http.StatusOK, rollup)
 }
+
+func (h *Handler) HandlePortfolio(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenant.FromContext(r.Context())
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	result, err := h.svc.GetPortfolio(r.Context(), tenantID)
+	if err != nil {
+		respond.Error(w, err)
+		return
+	}
+	respond.JSON(w, http.StatusOK, result)
+}

@@ -10,4 +10,5 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler, authMW, tenantMW func(http.H
 	mux.Handle("GET /spaces/{id}/rollup", read(h.HandleSpaceRollup))
 	mux.Handle("GET /org/rollup", read(h.HandleOrgRollup))
 	mux.Handle("GET /programmes/{id}/rollup", read(h.HandleProgrammeRollup))
+	mux.Handle("GET /portfolio", read(h.HandlePortfolio))
 }
