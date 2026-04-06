@@ -17,17 +17,19 @@ interface BoardColumnProps {
   onCardClick?: (card: Card) => void;
   isTargeted?: boolean;
   groupBy?: GroupBy;
+  wipLimit?: number;
 }
 
 const ADD_CARD_COLUMNS: Column[] = ["inbox"];
 
-export function BoardColumn({ column, label, cards, onAddCard, onCardClick, isTargeted, groupBy }: BoardColumnProps) {
+export function BoardColumn({ column, label, cards, onAddCard, onCardClick, isTargeted, groupBy, wipLimit }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column,
     data: { column },
   });
 
   const colConfig = COLUMNS.find((c) => c.key === column);
+  const isOverWip = wipLimit != null && cards.length > wipLimit;
 
   return (
     <div
@@ -41,7 +43,9 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick, isTa
       } transition-all`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200/60">
+      <div className={`flex items-center justify-between px-4 py-3 border-b border-neutral-200/60 rounded-t-[var(--radius-lg)] ${
+        isOverWip ? "bg-rose-50/60 animate-pulse" : ""
+      }`}>
         <div className="flex items-center gap-2.5">
           <span className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-neutral-700 tracking-[-0.01em]">
             {label}
@@ -49,6 +53,17 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick, isTa
           <span className="font-[family-name:var(--font-mono)] text-[11px] text-neutral-400 tabular-nums">
             {cards.length}
           </span>
+          {wipLimit != null && (
+            <span className={`text-[10px] font-[family-name:var(--font-mono)] font-medium px-1.5 py-0.5 rounded ${
+              cards.length > wipLimit
+                ? "bg-rose-100 text-rose-700"
+                : cards.length === wipLimit
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-emerald-50 text-emerald-600"
+            }`}>
+              {cards.length}/{wipLimit}
+            </span>
+          )}
         </div>
         {ADD_CARD_COLUMNS.includes(column) && onAddCard && (
           <button

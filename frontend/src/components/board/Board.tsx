@@ -60,6 +60,7 @@ interface BoardProps {
   spaceName?: string;
   spaceDescription?: string;
   spaceType?: "organization" | "department" | "team" | "workstream";
+  spaceWipLimits?: Record<string, number>;
   insightsOpen: boolean;
   onToggleInsights: () => void;
 }
@@ -69,6 +70,7 @@ export function Board({
   spaceName = "",
   spaceDescription,
   spaceType,
+  spaceWipLimits,
   insightsOpen,
   onToggleInsights,
 }: BoardProps) {
@@ -264,6 +266,7 @@ export function Board({
                 onCardClick={setSelectedCard}
                 isTargeted={overColumn === key && activeCard?.column_name !== key}
                 groupBy={groupBy}
+                wipLimit={spaceWipLimits?.[key]}
               />
             ))}
           </div>
