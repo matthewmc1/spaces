@@ -1,3 +1,14 @@
+export interface FlowDistribution {
+  feature_count: number;
+  defect_count: number;
+  risk_count: number;
+  debt_count: number;
+  feature_pct: number;
+  defect_pct: number;
+  risk_pct: number;
+  debt_pct: number;
+}
+
 export interface SpaceRollupSummary {
   space_id: string;
   space_type: string;
@@ -22,6 +33,7 @@ export interface SpaceRollup {
   linked_cards: number;
   alignment_pct: number;
   child_breakdown?: SpaceRollupSummary[];
+  flow_distribution?: FlowDistribution;
 }
 
 export interface ProgrammeRollup {
@@ -37,4 +49,5 @@ export interface ProgrammeRollup {
   linked_cards: number;
   alignment_pct: number;
   members: SpaceRollupSummary[];
+  flow_distribution?: FlowDistribution;
 }

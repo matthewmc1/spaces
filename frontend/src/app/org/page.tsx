@@ -7,6 +7,8 @@ import { useAllSpaces } from "@/hooks/useSpaces";
 import { RollupKPIs } from "@/components/rollup/RollupKPIs";
 import { DepartmentBreakdown } from "@/components/rollup/DepartmentBreakdown";
 import { ProgrammeCard } from "@/components/rollup/ProgrammeCard";
+import { FlowDistributionChart } from "@/components/rollup/FlowDistribution";
+import { CapacityGauge } from "@/components/rollup/CapacityGauge";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function OrgDashboardPage() {
@@ -16,6 +18,8 @@ export default function OrgDashboardPage() {
 
   const spaceNames: Record<string, string> = {};
   (spaces ?? []).forEach((s) => { spaceNames[s.id] = s.name; });
+
+  const orgSpace = (spaces ?? []).find((s) => s.space_type === "organization");
 
   const activeProgrammes = (programmes ?? []).filter((p) => p.status === "active");
 
@@ -41,6 +45,11 @@ export default function OrgDashboardPage() {
           ) : (
             <div className="space-y-8">
               <RollupKPIs rollup={rollup} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FlowDistributionChart flow={rollup?.flow_distribution} />
+                <CapacityGauge flow={rollup?.flow_distribution} targets={orgSpace?.capacity_targets} />
+              </div>
 
               <section>
                 <h2 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-400 mb-4">

@@ -9,6 +9,8 @@ import { useGoals } from "@/hooks/useGoals";
 import { useProgrammesForSpace } from "@/hooks/useProgrammes";
 import { RollupKPIs } from "@/components/rollup/RollupKPIs";
 import { ProgrammeCard } from "@/components/rollup/ProgrammeCard";
+import { FlowDistributionChart } from "@/components/rollup/FlowDistribution";
+import { CapacityGauge } from "@/components/rollup/CapacityGauge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ArrowRight, Folder } from "lucide-react";
 
@@ -68,6 +70,11 @@ export default function TeamDashboardPage({ params }: PageProps) {
           ) : (
             <div className="space-y-8">
               <RollupKPIs rollup={rollup} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FlowDistributionChart flow={rollup?.flow_distribution} />
+                <CapacityGauge flow={rollup?.flow_distribution} targets={space?.capacity_targets} />
+              </div>
 
               {workstreams.length > 0 && (
                 <section>
