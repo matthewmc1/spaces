@@ -56,7 +56,7 @@ export function CardContent({ card }: { card: Card }) {
           {card.title}
         </p>
         {daysInColumn >= 3 && !isDone && (
-          <span className="text-[10px] font-[family-name:var(--font-mono)] text-amber-500 whitespace-nowrap">
+          <span className="text-[10px] text-amber-500 whitespace-nowrap">
             {daysInColumn}d
           </span>
         )}
@@ -99,7 +99,7 @@ export function CardContent({ card }: { card: Card }) {
           )}
           <span className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
             <CheckSquare size={10} />
-            <span className="font-[family-name:var(--font-mono)]">0/0</span>
+            <span>0/0</span>
           </span>
           {card.due_date && (
             <span className="inline-flex items-center gap-1 text-[11px] text-neutral-400">

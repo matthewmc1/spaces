@@ -365,7 +365,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
           <div className="flex items-center gap-2 mb-2">
             <p className="text-[10px] text-neutral-400 uppercase tracking-wider">Subtasks</p>
             {subtasks.length > 0 && (
-              <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-400">
+              <span className="text-[10px] text-neutral-400">
                 {doneCount}/{subtasks.length}
               </span>
             )}

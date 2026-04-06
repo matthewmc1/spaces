@@ -102,7 +102,7 @@ export function FeatureCards() {
 function Step({ number, title, description }: { number: string; title: string; description: string }) {
   return (
     <div className="flex gap-6 items-start">
-      <span className="text-3xl font-[family-name:var(--font-mono)] font-bold text-primary-200 shrink-0 w-12">{number}</span>
+      <span className="text-3xl font-bold text-primary-200 shrink-0 w-12">{number}</span>
       <div>
         <h3 className="text-lg font-[family-name:var(--font-display)] text-neutral-800 mb-1">{title}</h3>
         <p className="text-sm text-neutral-500 leading-relaxed">{description}</p>

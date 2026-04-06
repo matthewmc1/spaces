@@ -43,7 +43,7 @@ export function CapacityGauge({ flow, targets }: CapacityGaugeProps) {
           <div key={item.key}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-neutral-600">{item.label}</span>
-              <span className={`text-[10px] font-[family-name:var(--font-mono)] ${statusColor[item.status as keyof typeof statusColor]}`}>
+              <span className={`text-[10px] ${statusColor[item.status as keyof typeof statusColor]}`}>
                 {Math.round(item.actual)}% / {item.target}% target
               </span>
             </div>

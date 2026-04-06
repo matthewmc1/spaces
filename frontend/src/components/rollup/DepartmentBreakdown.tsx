@@ -39,7 +39,7 @@ export function DepartmentBreakdown({ children, spaceNames }: DepartmentBreakdow
                 style={{ width: `${Math.round(item.completion_pct)}%` }}
               />
             </div>
-            <span className="text-[11px] font-[family-name:var(--font-mono)] text-neutral-500 w-10 text-right">
+            <span className="text-[11px] text-neutral-500 w-10 text-right">
               {Math.round(item.completion_pct)}%
             </span>
           </div>

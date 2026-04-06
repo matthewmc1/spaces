@@ -77,7 +77,7 @@ function GoalItem({
           <option value="abandoned">Abandoned</option>
         </select>
         {goal.target_date && (
-          <span className="font-[family-name:var(--font-mono)] text-[10px] text-neutral-400 ml-auto">
+          <span className="text-[10px] text-neutral-400 ml-auto">
             {new Date(goal.target_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
           </span>
         )}

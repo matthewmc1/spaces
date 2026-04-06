@@ -27,7 +27,7 @@ export function PortfolioCard({ item }: { item: PortfolioItem }) {
           {item.item_type === "programme" ? "Programme" : item.space_type}
         </span>
       </div>
-      <div className="flex items-center gap-4 text-[11px] font-[family-name:var(--font-mono)] text-neutral-500">
+      <div className="flex items-center gap-4 text-[11px] text-neutral-500">
         <span>{item.in_flight} in flight</span>
         <span>{Math.round(item.completion_pct)}% done</span>
         <span>{Math.round(item.alignment_pct)}% aligned</span>

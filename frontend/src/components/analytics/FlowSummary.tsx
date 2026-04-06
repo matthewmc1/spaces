@@ -24,10 +24,10 @@ export function FlowSummary({ flow }: FlowSummaryProps) {
         Flow Metrics
       </p>
       <div className="grid grid-cols-2 gap-3">
-        <MetricCard label="In Flight" value={inFlight} tooltip={TOOLTIPS.inFlight} className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]" />
-        <MetricCard label="Avg Age" value={`${avgDays}d`} tooltip={TOOLTIPS.avgAge} className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]" />
-        <MetricCard label="Done" value={throughput} tooltip={TOOLTIPS.done} className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]" />
-        <MetricCard label="Completion" value={`${completion}%`} tooltip={TOOLTIPS.completion} className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]" />
+        <MetricCard label="In Flight" value={inFlight} tooltip={TOOLTIPS.inFlight} />
+        <MetricCard label="Avg Age" value={`${avgDays}d`} tooltip={TOOLTIPS.avgAge} />
+        <MetricCard label="Done" value={throughput} tooltip={TOOLTIPS.done} />
+        <MetricCard label="Completion" value={`${completion}%`} tooltip={TOOLTIPS.completion} />
       </div>
     </div>
   );

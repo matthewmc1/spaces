@@ -64,7 +64,7 @@ export function FlowDistributionChart({ flow }: FlowDistributionProps) {
             <div key={s.key} className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
               <span className="text-xs text-neutral-600">{info?.label}</span>
-              <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-400">
+              <span className="text-[10px] text-neutral-400">
                 {Math.round(s.pct)}%
               </span>
             </div>

@@ -39,7 +39,7 @@ export function ProgrammeCard({ programme, completionPct }: ProgrammeCardProps) 
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Progress</span>
-              <span className="text-[11px] font-[family-name:var(--font-mono)] text-neutral-500">
+              <span className="text-[11px] text-neutral-500">
                 {Math.round(completionPct)}%
               </span>
             </div>

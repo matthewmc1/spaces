@@ -68,7 +68,7 @@ export function SpaceOverview({ spaceName, spaceDescription, cards = [], onUpdat
                   style={{ width: `${completionPct}%` }}
                 />
               </div>
-              <span className="text-xs font-[family-name:var(--font-mono)] text-neutral-600">{completionPct}%</span>
+              <span className="text-xs text-neutral-600">{completionPct}%</span>
             </div>
           </div>
 
@@ -79,7 +79,7 @@ export function SpaceOverview({ spaceName, spaceDescription, cards = [], onUpdat
               <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-medium">Active</span>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-[family-name:var(--font-mono)] font-medium text-neutral-800">{inProgressCards + reviewCards}</span>
+              <span className="text-lg font-medium text-neutral-800">{inProgressCards + reviewCards}</span>
               <span className="text-[11px] text-neutral-400">in flight</span>
             </div>
           </div>
@@ -92,19 +92,19 @@ export function SpaceOverview({ spaceName, spaceDescription, cards = [], onUpdat
             </div>
             <div className="flex gap-2">
               <div className="text-center">
-                <span className="block text-sm font-[family-name:var(--font-mono)] font-medium text-neutral-700">{plannedCards}</span>
+                <span className="block text-sm font-medium text-neutral-700">{plannedCards}</span>
                 <span className="text-[9px] text-neutral-400">planned</span>
               </div>
               <div className="text-center">
-                <span className="block text-sm font-[family-name:var(--font-mono)] font-medium text-neutral-700">{inProgressCards}</span>
+                <span className="block text-sm font-medium text-neutral-700">{inProgressCards}</span>
                 <span className="text-[9px] text-neutral-400">active</span>
               </div>
               <div className="text-center">
-                <span className="block text-sm font-[family-name:var(--font-mono)] font-medium text-neutral-700">{reviewCards}</span>
+                <span className="block text-sm font-medium text-neutral-700">{reviewCards}</span>
                 <span className="text-[9px] text-neutral-400">review</span>
               </div>
               <div className="text-center">
-                <span className="block text-sm font-[family-name:var(--font-mono)] font-medium text-emerald-600">{doneCards}</span>
+                <span className="block text-sm font-medium text-emerald-600">{doneCards}</span>
                 <span className="text-[9px] text-neutral-400">done</span>
               </div>
             </div>

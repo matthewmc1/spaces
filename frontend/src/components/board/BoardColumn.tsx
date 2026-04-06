@@ -50,11 +50,11 @@ export function BoardColumn({ column, label, cards, onAddCard, onCardClick, isTa
           <span className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-neutral-700 tracking-[-0.01em]">
             {label}
           </span>
-          <span className="font-[family-name:var(--font-mono)] text-[11px] text-neutral-400 tabular-nums">
+          <span className="text-[11px] text-neutral-400 tabular-nums">
             {cards.length}
           </span>
           {wipLimit != null && (
-            <span className={`text-[10px] font-[family-name:var(--font-mono)] font-medium px-1.5 py-0.5 rounded ${
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
               cards.length > wipLimit
                 ? "bg-rose-100 text-rose-700"
                 : cards.length === wipLimit
@@ -129,7 +129,7 @@ function PriorityGroups({ cards, onCardClick }: { cards: Card[]; onCardClick?: (
             <div className="flex items-center gap-1.5 px-1 mb-1">
               <span className={`w-1.5 h-1.5 rounded-full ${color.replace("text-", "bg-")}`} />
               <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">{label}</span>
-              <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-300">{groupCards.length}</span>
+              <span className="text-[10px] text-neutral-300">{groupCards.length}</span>
             </div>
             {groupCards.map(card => (
               <div key={card.id} className="mb-1.5">
@@ -154,7 +154,7 @@ function AssigneeGroups({ cards, onCardClick }: { cards: Card[]; onCardClick?: (
           <div className="flex items-center gap-1.5 px-1 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />
             <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Assigned</span>
-            <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-300">{assigned.length}</span>
+            <span className="text-[10px] text-neutral-300">{assigned.length}</span>
           </div>
           {assigned.map(card => (
             <div key={card.id} className="mb-1.5">
@@ -168,7 +168,7 @@ function AssigneeGroups({ cards, onCardClick }: { cards: Card[]; onCardClick?: (
           <div className="flex items-center gap-1.5 px-1 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
             <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Unassigned</span>
-            <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-300">{unassigned.length}</span>
+            <span className="text-[10px] text-neutral-300">{unassigned.length}</span>
           </div>
           {unassigned.map(card => (
             <div key={card.id} className="mb-1.5">

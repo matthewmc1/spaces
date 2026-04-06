@@ -19,25 +19,21 @@ export function RollupKPIs({ rollup }: RollupKPIsProps) {
         label="In Flight"
         value={inFlight}
         tooltip="Cards in Planned, In Progress, or Review across all descendant spaces."
-        className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]"
       />
       <MetricCard
         label="Avg Cycle"
         value={`${cycle.toFixed(1)}d`}
         tooltip="Average age of in-flight cards across all descendant spaces."
-        className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]"
       />
       <MetricCard
         label="Completion"
         value={`${Math.round(completion)}%`}
         tooltip="Percentage of cards that are Done across the rolled-up scope."
-        className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]"
       />
       <MetricCard
         label="Alignment"
         value={`${Math.round(alignment)}%`}
         tooltip="Percentage of in-flight cards linked to at least one goal."
-        className="[&_span.text-2xl]:font-[family-name:var(--font-mono)]"
       />
     </div>
   );

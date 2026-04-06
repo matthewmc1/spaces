@@ -73,7 +73,7 @@ export function BoardHeader({
           <p className="text-sm text-neutral-500 mt-1">{spaceDescription}</p>
         )}
         {totalCards != null && totalColumns != null && (
-          <p className="font-[family-name:var(--font-mono)] text-[11px] text-neutral-400 mt-1.5 tabular-nums">
+          <p className="text-[11px] text-neutral-400 mt-1.5 tabular-nums">
             {totalCards} items across {totalColumns} columns
           </p>
         )}

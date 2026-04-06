@@ -44,7 +44,7 @@ export function AnalyticsSidebar({ open, onClose, spaceId, cards: _cards }: Anal
           <h2 className="font-[family-name:var(--font-display)] text-base font-semibold text-neutral-800 tracking-[-0.01em]">
             Insights
           </h2>
-          <p className="font-[family-name:var(--font-mono)] text-[10px] text-neutral-400 mt-0.5">
+          <p className="text-[10px] text-neutral-400 mt-0.5">
             Last updated: just now
           </p>
         </div>

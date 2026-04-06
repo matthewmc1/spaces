@@ -35,7 +35,7 @@ function BoardPreview() {
                 <span className="text-xs font-[family-name:var(--font-display)] text-neutral-600">
                   {col.name}
                 </span>
-                <span className="text-[10px] font-[family-name:var(--font-mono)] text-neutral-400">
+                <span className="text-[10px] text-neutral-400">
                   {col.cards}
                 </span>
               </div>
@@ -98,15 +98,15 @@ export function HeroSection() {
           <p className="text-xs text-neutral-400 uppercase tracking-[0.1em] mb-3">Why clarity matters</p>
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto text-left">
             <div>
-              <p className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-primary-600">73%</p>
+              <p className="text-2xl font-semibold text-primary-600">73%</p>
               <p className="text-xs text-neutral-500 mt-1">of strategic initiatives fail due to poor alignment between teams and goals</p>
             </div>
             <div>
-              <p className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-primary-600">2.5x</p>
+              <p className="text-2xl font-semibold text-primary-600">2.5x</p>
               <p className="text-xs text-neutral-500 mt-1">faster delivery when teams can see how their work connects to outcomes</p>
             </div>
             <div>
-              <p className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-primary-600">40%</p>
+              <p className="text-2xl font-semibold text-primary-600">40%</p>
               <p className="text-xs text-neutral-500 mt-1">reduction in wasted effort when priorities are visible across the org</p>
             </div>
           </div>

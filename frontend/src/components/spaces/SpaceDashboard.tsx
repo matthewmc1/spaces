@@ -131,7 +131,7 @@ function SpaceCard({ space, cards }: { space: Space; cards?: Card[] }) {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Progress</span>
-            <span className="text-[11px] font-[family-name:var(--font-mono)] text-neutral-500">{metrics.completion}%</span>
+            <span className="text-[11px] text-neutral-500">{metrics.completion}%</span>
           </div>
           <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
             <div
@@ -148,28 +148,28 @@ function SpaceCard({ space, cards }: { space: Space; cards?: Card[] }) {
               <BarChart3 size={10} className="text-neutral-300" />
               <span className="text-[9px] text-neutral-400 uppercase">Total</span>
             </div>
-            <span className="text-sm font-[family-name:var(--font-mono)] font-medium text-neutral-700">{metrics.total}</span>
+            <span className="text-sm font-medium text-neutral-700">{metrics.total}</span>
           </div>
           <div>
             <div className="flex items-center gap-1 mb-0.5">
               <AlertCircle size={10} className="text-neutral-300" />
               <span className="text-[9px] text-neutral-400 uppercase">Backlog</span>
             </div>
-            <span className="text-sm font-[family-name:var(--font-mono)] font-medium text-neutral-700">{metrics.backlog}</span>
+            <span className="text-sm font-medium text-neutral-700">{metrics.backlog}</span>
           </div>
           <div>
             <div className="flex items-center gap-1 mb-0.5">
               <Clock size={10} className="text-neutral-300" />
               <span className="text-[9px] text-neutral-400 uppercase">Cycle</span>
             </div>
-            <span className="text-sm font-[family-name:var(--font-mono)] font-medium text-neutral-700">{metrics.cycleTime}d</span>
+            <span className="text-sm font-medium text-neutral-700">{metrics.cycleTime}d</span>
           </div>
           <div>
             <div className="flex items-center gap-1 mb-0.5">
               <CheckCircle2 size={10} className="text-emerald-300" />
               <span className="text-[9px] text-neutral-400 uppercase">Done</span>
             </div>
-            <span className="text-sm font-[family-name:var(--font-mono)] font-medium text-emerald-600">{metrics.done}</span>
+            <span className="text-sm font-medium text-emerald-600">{metrics.done}</span>
           </div>
         </div>
 
@@ -199,7 +199,7 @@ function FocusItem({ card, spaceName }: { card: Card; spaceName: string }) {
         <p className="text-[10px] text-neutral-400">{spaceName} · {columnLabel}</p>
       </div>
       {daysInColumn > 0 && (
-        <span className="text-[10px] font-[family-name:var(--font-mono)] text-amber-500">{daysInColumn}d</span>
+        <span className="text-[10px] text-amber-500">{daysInColumn}d</span>
       )}
     </div>
   );
@@ -278,21 +278,21 @@ export function SpaceDashboard({ spaces, isLoading, cardsBySpace }: SpaceDashboa
       {/* Summary bar */}
       <div className="flex items-center gap-6 mb-6 pb-4 border-b border-neutral-200/60">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-neutral-800">{spaces.length}</span>
+          <span className="text-2xl font-semibold text-neutral-800">{spaces.length}</span>
           <span className="text-xs text-neutral-400">spaces</span>
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-neutral-600">{totalCards}</span>
+          <span className="text-2xl font-semibold text-neutral-600">{totalCards}</span>
           <span className="text-xs text-neutral-400">cards</span>
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-emerald-600">
+          <span className="text-2xl font-semibold text-emerald-600">
             {spaces.filter(s => s.status === "on_track").length}
           </span>
           <span className="text-xs text-neutral-400">on track</span>
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-2xl font-[family-name:var(--font-mono)] font-semibold text-amber-600">
+          <span className="text-2xl font-semibold text-amber-600">
             {spaces.filter(s => s.status === "at_risk").length}
           </span>
           <span className="text-xs text-neutral-400">at risk</span>
