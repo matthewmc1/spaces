@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import type { Card, Column } from "@/types/card";
 import { COLUMNS } from "@/types/card";
+import { WORK_TYPES } from "@/types/flow";
 import { useGoals, useCreateGoalLink, useDeleteGoalLink } from "@/hooks/useGoals";
 import type { Goal, GoalLink } from "@/types/goal";
 import {
@@ -116,6 +117,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
+  const [workType, setWorkType] = useState("");
   const [effort, setEffort] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [labelsText, setLabelsText] = useState("");
@@ -142,6 +144,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
       setTitle(card.title);
       setDescription(card.description || "");
       setPriority(card.priority || "");
+      setWorkType(card.work_type || "feature");
       setEffort(card.effort_estimate?.toString() || "");
       setDueDate(card.due_date || "");
       setLabelsText(card.labels?.join(", ") || "");
@@ -163,11 +166,12 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
       title: title.trim() || card.title,
       description: description.trim(),
       priority: (priority || undefined) as Card["priority"],
+      work_type: workType as Card["work_type"],
       effort_estimate: effort ? parseInt(effort, 10) : undefined,
       due_date: dueDate || undefined,
       labels,
     });
-  }, [card, onUpdate, title, description, priority, effort, dueDate, labelsText]);
+  }, [card, onUpdate, title, description, priority, workType, effort, dueDate, labelsText]);
 
   if (!card) return null;
 
@@ -272,7 +276,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
         </div>
 
         {/* Inline fields grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div className="space-y-1">
             <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Status</label>
             <Badge variant="primary" dot>{currentColumn?.label ?? card.column_name}</Badge>
@@ -295,6 +299,18 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
               className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
             >
               {EFFORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Work Type</label>
+            <select
+              value={workType}
+              onChange={(e) => { setWorkType(e.target.value); setTimeout(saveField, 0); }}
+              className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
+            >
+              {WORK_TYPES.map((wt) => (
+                <option key={wt.key} value={wt.key}>{wt.label}</option>
+              ))}
             </select>
           </div>
           <div className="space-y-1">

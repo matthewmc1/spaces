@@ -6,6 +6,8 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { WORK_TYPES } from "@/types/flow";
+import type { WorkType } from "@/types/card";
 
 interface CreateCardDialogProps {
   spaceId: string;
@@ -35,6 +37,7 @@ export function CreateCardDialog({ spaceId, onClose }: CreateCardDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
+  const [workType, setWorkType] = useState<string>("feature");
   const [effort, setEffort] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [labelsText, setLabelsText] = useState("");
@@ -56,6 +59,7 @@ export function CreateCardDialog({ spaceId, onClose }: CreateCardDialogProps) {
         effort_estimate: effort ? parseInt(effort, 10) : undefined,
         due_date: dueDate || undefined,
         labels: labels.length > 0 ? labels : undefined,
+        work_type: workType as WorkType,
       },
       { onSuccess: onClose }
     );
@@ -102,13 +106,19 @@ export function CreateCardDialog({ spaceId, onClose }: CreateCardDialogProps) {
             options={PRIORITY_OPTIONS}
           />
           <Select
+            label="Work Type"
+            value={workType}
+            onChange={(e) => setWorkType(e.target.value)}
+            options={WORK_TYPES.map((wt) => ({ value: wt.key, label: wt.label }))}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Select
             label="Effort"
             value={effort}
             onChange={(e) => setEffort(e.target.value)}
             options={EFFORT_OPTIONS}
           />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="block text-sm font-medium text-neutral-700">Due Date</label>
             <input
@@ -119,6 +129,8 @@ export function CreateCardDialog({ spaceId, onClose }: CreateCardDialogProps) {
               disabled={createCard.isPending}
             />
           </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
           <Input
             label="Labels"
             value={labelsText}

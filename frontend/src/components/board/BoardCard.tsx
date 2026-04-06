@@ -4,6 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Calendar, CheckSquare, User } from "lucide-react";
 import type { Card } from "@/types/card";
+import { WORK_TYPES } from "@/types/flow";
 
 interface BoardCardProps {
   card: Card;
@@ -42,6 +43,7 @@ export function CardContent({ card }: { card: Card }) {
   const priority =
     card.priority && priorityStyles[card.priority] ? card.priority : null;
   const daysInColumn = getDaysInColumn(card.moved_at);
+  const workTypeInfo = WORK_TYPES.find((wt) => wt.key === card.work_type);
 
   return (
     <div className="p-2.5">
@@ -74,6 +76,11 @@ export function CardContent({ card }: { card: Card }) {
             className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${priorityStyles[priority].className} ${isDone ? "opacity-50" : ""}`}
           >
             {priorityStyles[priority].label}
+          </span>
+        )}
+        {workTypeInfo && (
+          <span className={`text-[9px] font-medium px-1 py-0.5 rounded ${workTypeInfo.bgColor} ${workTypeInfo.color} ${isDone ? "opacity-50" : ""}`}>
+            {workTypeInfo.label}
           </span>
         )}
         {card.labels?.map((label) => (
