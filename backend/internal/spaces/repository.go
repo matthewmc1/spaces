@@ -231,6 +231,8 @@ func scanSpaces(rows pgx.Rows) ([]Space, error) {
 			&s.OwnerID,
 			&s.Visibility,
 			&s.SpaceType,
+			&s.WipLimits,
+			&s.CapacityTargets,
 			&s.Status,
 			&s.CreatedAt,
 			&s.UpdatedAt,

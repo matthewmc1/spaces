@@ -1,6 +1,7 @@
 package spaces
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -38,6 +39,7 @@ func (h *Handler) HandleListSpaces(w http.ResponseWriter, r *http.Request) {
 		spaces, err = h.svc.ListRoots(r.Context(), tenantID)
 	}
 	if err != nil {
+		slog.Error("ListSpaces failed", "error", err, "scope", r.URL.Query().Get("scope"))
 		respond.Error(w, err)
 		return
 	}
