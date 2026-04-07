@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronDown, Building2, Layers, Users, Folder, Trash2, MoreHorizontal } from "lucide-react";
+import { ChevronRight, ChevronDown, Building2, Layers, Users, Folder, Trash2, Plus, MoreHorizontal } from "lucide-react";
 import { useDeleteSpace } from "@/hooks/useSpaces";
+import { CreateSpaceDialog } from "./CreateSpaceDialog";
 import type { Space, SpaceType } from "@/types/space";
 
 const typeIcon: Record<SpaceType, typeof Folder> = {
@@ -37,6 +38,7 @@ export function SpaceTreeNode({
   const hasChildren = children.length > 0;
   const [expanded, setExpanded] = useState(level < 3);
   const [showMenu, setShowMenu] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const deleteSpace = useDeleteSpace();
 
   const isActive = space.id === activeSpaceId;
@@ -75,7 +77,7 @@ export function SpaceTreeNode({
           className="flex items-center gap-2 flex-1 min-w-0 truncate"
         >
           <Icon size={13} className={`flex-shrink-0 ${iconColor}`} />
-          <span className="text-[13px] font-[family-name:var(--font-display)] truncate">
+          <span className="text-[12px] truncate">
             {space.name}
           </span>
         </Link>
@@ -92,7 +94,14 @@ export function SpaceTreeNode({
         </button>
 
         {showMenu && (
-          <div className="absolute right-1 top-full mt-0.5 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] z-30 py-1 w-32">
+          <div className="absolute right-1 top-full mt-0.5 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] z-30 py-1 w-36">
+            <button
+              onClick={() => { setShowCreate(true); setShowMenu(false); setExpanded(true); }}
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50 transition-colors"
+            >
+              <Plus size={11} />
+              Add child space
+            </button>
             <button
               onClick={handleDelete}
               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors"
@@ -103,7 +112,7 @@ export function SpaceTreeNode({
           </div>
         )}
       </div>
-      {hasChildren && expanded && (
+      {expanded && (
         <div>
           {children.map((child) => (
             <SpaceTreeNode
@@ -115,6 +124,12 @@ export function SpaceTreeNode({
             />
           ))}
         </div>
+      )}
+      {showCreate && (
+        <CreateSpaceDialog
+          parentSpaceId={space.id}
+          onClose={() => setShowCreate(false)}
+        />
       )}
     </div>
   );

@@ -1,19 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateSpace } from "@/hooks/useSpaces";
+import { useCreateSpace, useAllSpaces } from "@/hooks/useSpaces";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import type { SpaceType } from "@/types/space";
-
-const SPACE_TYPE_OPTIONS = [
-  { value: "workstream", label: "Workstream — a piece of work" },
-  { value: "team", label: "Team — a group of people" },
-  { value: "department", label: "Department — a group of teams" },
-  { value: "organization", label: "Organization — the top-level" },
-];
 
 interface CreateSpaceDialogProps {
   parentSpaceId?: string;
@@ -35,6 +28,18 @@ export function CreateSpaceDialog({
   const [description, setDescription] = useState("");
   const [spaceType, setSpaceType] = useState<SpaceType>(parentSpaceId ? "workstream" : "team");
   const createSpace = useCreateSpace();
+  const { data: allSpaces } = useAllSpaces();
+
+  // Only allow one organization per tenant
+  const hasOrg = (allSpaces ?? []).some((s) => s.space_type === "organization");
+
+  // Smart type options based on context
+  const typeOptions = [
+    { value: "workstream", label: "Workstream — a piece of work" },
+    { value: "team", label: "Team — a group of people" },
+    { value: "department", label: "Department — a group of teams" },
+    ...(!hasOrg ? [{ value: "organization", label: "Organization — the top-level" }] : []),
+  ];
 
   const slug = toSlug(name);
 
@@ -76,7 +81,7 @@ export function CreateSpaceDialog({
           label="Type"
           value={spaceType}
           onChange={(e) => setSpaceType(e.target.value as SpaceType)}
-          options={SPACE_TYPE_OPTIONS}
+          options={typeOptions}
         />
         <Input
           multiline

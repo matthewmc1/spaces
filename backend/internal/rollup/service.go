@@ -47,7 +47,7 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 
 	// Fetch the space and all descendants from the materialized view
 	const q = `
-		SELECT space_id, space_type, total_cards, done_cards, in_flight, high_pri_open,
+		SELECT space_id, space_type, path, total_cards, done_cards, in_flight, high_pri_open,
 		       avg_cycle_days, total_goals, linked_cards,
 		       feature_count, defect_count, risk_count, debt_count
 		FROM space_rollup_stats
@@ -67,28 +67,35 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 	var totalCycleSum float64
 	var cycleCount int
 
+	// Collect all rows with their paths for post-processing
+	type rowData struct {
+		SpaceID      uuid.UUID
+		SpaceType    string
+		Path         string
+		TotalCards   int
+		DoneCards    int
+		InFlight     int
+		HighPriOpen  int
+		AvgCycleDays float64
+		TotalGoals   int
+		LinkedCards  int
+		FeatureCount int
+		DefectCount  int
+		RiskCount    int
+		DebtCount    int
+	}
+	var allRows []rowData
+
 	for rows.Next() {
-		var row struct {
-			SpaceID      uuid.UUID
-			SpaceType    string
-			TotalCards   int
-			DoneCards    int
-			InFlight     int
-			HighPriOpen  int
-			AvgCycleDays float64
-			TotalGoals   int
-			LinkedCards  int
-			FeatureCount int
-			DefectCount  int
-			RiskCount    int
-			DebtCount    int
-		}
-		if err := rows.Scan(&row.SpaceID, &row.SpaceType, &row.TotalCards, &row.DoneCards,
+		var row rowData
+		if err := rows.Scan(&row.SpaceID, &row.SpaceType, &row.Path, &row.TotalCards, &row.DoneCards,
 			&row.InFlight, &row.HighPriOpen, &row.AvgCycleDays, &row.TotalGoals, &row.LinkedCards,
 			&row.FeatureCount, &row.DefectCount, &row.RiskCount, &row.DebtCount); err != nil {
 			return nil, err
 		}
+		allRows = append(allRows, row)
 
+		// Accumulate totals
 		result.TotalCards += row.TotalCards
 		result.DoneCards += row.DoneCards
 		result.InFlight += row.InFlight
@@ -104,27 +111,58 @@ func (s *Service) GetSpaceRollup(ctx context.Context, tenantID, spaceID uuid.UUI
 			totalCycleSum += row.AvgCycleDays
 			cycleCount++
 		}
+	}
 
-		// Add child rows to breakdown (excluding the root itself)
-		if row.SpaceID != spaceID {
-			childCompletion := 0.0
-			if row.TotalCards > 0 {
-				childCompletion = float64(row.DoneCards) / float64(row.TotalCards) * 100
-			}
-			childAlignment := 0.0
-			if row.InFlight > 0 {
-				childAlignment = float64(row.LinkedCards) / float64(row.InFlight) * 100
-			}
-			result.ChildBreakdown = append(result.ChildBreakdown, SpaceRollupSummary{
-				SpaceID:      row.SpaceID,
-				SpaceType:    row.SpaceType,
-				TotalCards:   row.TotalCards,
-				DoneCards:    row.DoneCards,
-				InFlight:     row.InFlight,
-				Completion:   childCompletion,
-				AlignmentPct: childAlignment,
-			})
+	// Build child breakdown: only direct children of the root, with AGGREGATED
+	// stats from all their descendants (not just their own direct cards).
+	// A direct child has a path like rootPath + "<child-uuid>/"
+	// Build breakdown from direct children only
+	for _, row := range allRows {
+		if row.SpaceID == spaceID {
+			continue // skip the root itself
 		}
+		// Check if this is a direct child: path = rootPath + one UUID segment + "/"
+		suffix := row.Path[len(rootPath):]
+		// Direct children have exactly one "/" at the end, no "/" inside
+		// e.g. suffix = "aaaa-bbbb-.../" (one UUID + trailing slash)
+		slashCount := 0
+		for _, c := range suffix {
+			if c == '/' {
+				slashCount++
+			}
+		}
+		if slashCount != 1 {
+			continue // not a direct child — skip (it's a deeper descendant)
+		}
+
+		// This is a direct child. Sum all descendants whose path starts with this child's path.
+		childTotal, childDone, childInFlight, childLinked := 0, 0, 0, 0
+		for _, desc := range allRows {
+			if len(desc.Path) >= len(row.Path) && desc.Path[:len(row.Path)] == row.Path {
+				childTotal += desc.TotalCards
+				childDone += desc.DoneCards
+				childInFlight += desc.InFlight
+				childLinked += desc.LinkedCards
+			}
+		}
+
+		childCompletion := 0.0
+		if childTotal > 0 {
+			childCompletion = float64(childDone) / float64(childTotal) * 100
+		}
+		childAlignment := 0.0
+		if childInFlight > 0 {
+			childAlignment = float64(childLinked) / float64(childInFlight) * 100
+		}
+		result.ChildBreakdown = append(result.ChildBreakdown, SpaceRollupSummary{
+			SpaceID:      row.SpaceID,
+			SpaceType:    row.SpaceType,
+			TotalCards:   childTotal,
+			DoneCards:    childDone,
+			InFlight:     childInFlight,
+			Completion:   childCompletion,
+			AlignmentPct: childAlignment,
+		})
 	}
 
 	if result.TotalCards > 0 {
