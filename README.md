@@ -69,20 +69,23 @@ Initiatives that span multiple teams (like "Identity Platform 2026") are program
 ### Quick Start
 
 ```bash
-# 1. Start databases
+# 1. Start databases (first time: creates schema + dev seed automatically)
+docker compose down -v   # only needed if you have a stale volume from a previous version
 docker compose up -d
 
 # 2. Start backend
 cd backend
-cp .env.example .env  # add your Clerk keys
+cp .env.example .env  # optionally add Clerk keys; works without them (dev-token mode)
 go run cmd/server/main.go
 
 # 3. Start frontend (new terminal)
 cd frontend
 npm install
-cp .env.local.example .env.local  # add your Clerk publishable key
+cp .env.local.example .env.local  # optionally add Clerk keys; works without them
 npm run dev
 ```
+
+> **Troubleshooting:** If Postgres logs `database directory contains a database, skipping initialization`, run `docker compose down -v && docker compose up -d` to wipe the volume and re-run the init script.
 
 Visit [http://localhost:3000](http://localhost:3000)
 
