@@ -55,7 +55,7 @@ export function HeroSection() {
           <Logo variant="full" size={48} className="justify-center mb-8" />
         </div>
         <h1
-          className="text-5xl font-[family-name:var(--font-display)] tracking-[-0.02em] text-neutral-800 animate-fade-in-up"
+          className="text-6xl font-[family-name:var(--font-display)] tracking-[-0.02em] text-neutral-800 animate-fade-in-up"
           style={{ animationDelay: "0.1s" }}
         >
           The operating system for engineering teams.

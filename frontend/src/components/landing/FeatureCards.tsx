@@ -36,7 +36,7 @@ export function FeatureCards() {
           <p className="text-xs font-medium text-primary-600 uppercase tracking-[0.08em] mb-3">
             The engineering operating system
           </p>
-          <h2 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
+          <h2 className="text-4xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
             Portfolio visibility meets team autonomy
           </h2>
         </div>
@@ -83,7 +83,7 @@ export function FeatureCards() {
             <p className="text-xs font-medium text-primary-600 uppercase tracking-[0.08em] mb-3">
               The operating cadence
             </p>
-            <h2 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
+            <h2 className="text-4xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
               From cognitive overload to calm clarity
             </h2>
           </div>

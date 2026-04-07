@@ -153,7 +153,7 @@ export default function SettingsPage() {
         <div className="max-w-2xl mx-auto">
           {/* Page header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
+            <h1 className="text-4xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
               Settings
             </h1>
             <p className="mt-1.5 text-sm text-neutral-500">

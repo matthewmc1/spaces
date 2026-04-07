@@ -77,7 +77,7 @@ export function SpaceTreeNode({
           className="flex items-center gap-2 flex-1 min-w-0 truncate"
         >
           <Icon size={13} className={`flex-shrink-0 ${iconColor}`} />
-          <span className="text-[12px] truncate">
+          <span className="text-[13px] truncate">
             {space.name}
           </span>
         </Link>

@@ -23,7 +23,7 @@ export default function PortfolioPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
+              <h1 className="text-4xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
                 Portfolio
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">

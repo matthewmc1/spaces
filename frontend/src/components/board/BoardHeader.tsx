@@ -66,7 +66,7 @@ export function BoardHeader({
             </span>
           )}
         </div>
-        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-neutral-800 tracking-[-0.02em]">
+        <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold text-neutral-800 tracking-[-0.02em]">
           {spaceName}
         </h1>
         {spaceDescription && (

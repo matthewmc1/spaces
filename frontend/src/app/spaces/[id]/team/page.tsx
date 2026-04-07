@@ -50,7 +50,7 @@ export default function TeamDashboardPage({ params }: PageProps) {
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-400">
                 {space?.space_type ?? "Team"}
               </p>
-              <h1 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em] mt-1">
+              <h1 className="text-4xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em] mt-1">
                 {space?.name}
               </h1>
               {space?.description && (

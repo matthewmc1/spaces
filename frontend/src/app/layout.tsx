@@ -8,7 +8,7 @@ import { ClerkTokenBridge } from "@/components/common/ClerkTokenBridge";
 const instrumentSerif = Instrument_Serif({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-display",
 });
 
 const dmSans = DM_Sans({
@@ -19,7 +19,7 @@ const dmSans = DM_Sans({
 const ibmPlexMono = IBM_Plex_Mono({
   weight: ["400", "500", "600"],
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {

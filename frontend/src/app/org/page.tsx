@@ -29,7 +29,7 @@ export default function OrgDashboardPage() {
       <main className="relative flex-1 overflow-y-auto p-4 md:p-8 animate-fade-in-up">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
+            <h1 className="text-4xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
               Organization Dashboard
             </h1>
             <p className="mt-2 text-sm text-neutral-500">
