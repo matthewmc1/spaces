@@ -5,7 +5,12 @@ import Link from "next/link";
 import { Settings, LayoutDashboard, Zap, HelpCircle, Menu, X, Building2, Target, Briefcase } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { SpaceTree } from "@/components/spaces/SpaceTree";
-import { UserButton } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
+
+const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const UserButton = clerkEnabled
+  ? dynamic(() => import("@clerk/nextjs").then((m) => m.UserButton), { ssr: false })
+  : () => null;
 
 interface SidebarProps {
   activeSpaceId?: string;
