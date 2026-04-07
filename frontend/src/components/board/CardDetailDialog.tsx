@@ -113,7 +113,7 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
   const [goalLinkType, setGoalLinkType] = useState<GoalLink["link_type"]>("supports");
   const [localLinks, setLocalLinks] = useState<(GoalLink & { goalTitle: string })[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [activeTab, setActiveTab] = useState<"details" | "alignment" | "integrations">("details");
+  const [activeTab, setActiveTab] = useState<"subtasks" | "alignment" | "integrations">("subtasks");
 
   // Inline editable fields
   const [title, setTitle] = useState("");
@@ -152,6 +152,9 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
       setDueDate(card.due_date || "");
       setLabelsText(card.labels?.join(", ") || "");
       setConfirmDelete(false);
+      setSubtasks([]);
+      setNewSubtask("");
+      setActiveTab("subtasks");
       setLocalLinks([]);
       setCardLinkFormOpen(false);
       setClIntegrationId("");
@@ -278,110 +281,147 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
           )}
         </div>
 
-        {/* Inline fields grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div className="space-y-1">
-            <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Status</label>
-            <Badge variant="primary" dot>{currentColumn?.label ?? card.column_name}</Badge>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Priority</label>
-            <select
-              value={priority}
-              onChange={(e) => { setPriority(e.target.value); setTimeout(saveField, 0); }}
-              className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-            >
-              {PRIORITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Effort</label>
-            <select
-              value={effort}
-              onChange={(e) => { setEffort(e.target.value); setTimeout(saveField, 0); }}
-              className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-            >
-              {EFFORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Work Type</label>
-            <select
-              value={workType}
-              onChange={(e) => { setWorkType(e.target.value); setTimeout(saveField, 0); }}
-              className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-            >
-              {WORK_TYPES.map((wt) => (
-                <option key={wt.key} value={wt.key}>{wt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-              <Calendar className="w-3 h-3" /> Due Date
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => { setDueDate(e.target.value); setTimeout(saveField, 0); }}
-              className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-            />
-          </div>
-        </div>
+        {/* Two-column layout: main content left, metadata sidebar right */}
+        <div className="flex gap-6">
+          {/* Left column — main content */}
+          <div className="flex-1 min-w-0 space-y-4">
 
-        {/* Description — inline editable */}
-        <div>
-          <label className="text-[10px] text-neutral-400 uppercase tracking-wider mb-1.5 block">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onBlur={saveField}
-            rows={3}
-            placeholder="Add a description..."
-            className="w-full bg-white border border-neutral-200 rounded-[var(--radius-md)] px-3 py-2 text-sm text-neutral-700 leading-relaxed placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500 resize-none"
-          />
-        </div>
+            {/* Description */}
+            <div>
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider mb-1.5 block">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={saveField}
+                rows={3}
+                placeholder="Add a description..."
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-md)] px-3 py-2 text-sm text-neutral-700 leading-relaxed placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500 resize-none"
+              />
+            </div>
 
-        {/* Labels — inline editable */}
-        <div>
-          <label className="text-[10px] text-neutral-400 uppercase tracking-wider mb-1.5 block">Labels</label>
-          <input
-            value={labelsText}
-            onChange={(e) => setLabelsText(e.target.value)}
-            onBlur={saveField}
-            placeholder="bug, frontend, urgent..."
-            className="w-full bg-white border border-neutral-200 rounded-[var(--radius-md)] px-3 py-2 text-sm text-neutral-700 placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-          />
-          {labelsText && (
-            <div className="flex gap-1.5 flex-wrap mt-2">
-              {labelsText.split(",").map((l) => l.trim()).filter(Boolean).map((label) => (
-                <Badge key={label} variant="primary">{label}</Badge>
+            {/* Labels */}
+            <div>
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider mb-1.5 block">Labels</label>
+              <input
+                value={labelsText}
+                onChange={(e) => setLabelsText(e.target.value)}
+                onBlur={saveField}
+                placeholder="bug, frontend, urgent..."
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-md)] px-3 py-2 text-sm text-neutral-700 placeholder:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
+              />
+              {labelsText && (
+                <div className="flex gap-1.5 flex-wrap mt-2">
+                  {labelsText.split(",").map((l) => l.trim()).filter(Boolean).map((label) => (
+                    <Badge key={label} variant="primary">{label}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Tabs for additional content */}
+            <div className="flex gap-1 border-b border-neutral-200">
+              {(["subtasks", "alignment", "integrations"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setActiveTab(t as typeof activeTab)}
+                  className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors border-b-2 -mb-px ${
+                    activeTab === t
+                      ? "border-primary-500 text-primary-700"
+                      : "border-transparent text-neutral-400 hover:text-neutral-600"
+                  }`}
+                >
+                  {t}
+                </button>
               ))}
             </div>
-          )}
-        </div>
 
-        {/* Tabs */}
-        <div>
-          <div className="flex gap-1 border-b border-neutral-200 mb-4">
-            {(["details", "alignment", "integrations"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setActiveTab(t)}
-                className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors border-b-2 -mb-px ${
-                  activeTab === t
-                    ? "border-primary-500 text-primary-700"
-                    : "border-transparent text-neutral-400 hover:text-neutral-600"
-                }`}
+          </div>
+
+          {/* Right column — metadata sidebar */}
+          <div className="w-48 shrink-0 space-y-3">
+            <div className="space-y-1">
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Status</label>
+              <Badge variant="primary" dot>{currentColumn?.label ?? card.column_name}</Badge>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Priority</label>
+              <select
+                value={priority}
+                onChange={(e) => { setPriority(e.target.value); setTimeout(saveField, 0); }}
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200"
               >
-                {t}
-              </button>
-            ))}
+                {PRIORITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Work Type</label>
+              <select
+                value={workType}
+                onChange={(e) => { setWorkType(e.target.value); setTimeout(saveField, 0); }}
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              >
+                {WORK_TYPES.map((wt) => <option key={wt.key} value={wt.key}>{wt.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Effort</label>
+              <select
+                value={effort}
+                onChange={(e) => { setEffort(e.target.value); setTimeout(saveField, 0); }}
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              >
+                {EFFORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] text-neutral-400 uppercase tracking-wider flex items-center gap-1">
+                <Calendar className="w-3 h-3" /> Due Date
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => { setDueDate(e.target.value); setTimeout(saveField, 0); }}
+                className="w-full bg-white border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+            </div>
+            <div className="pt-2 border-t border-neutral-100 space-y-1">
+              <p className="text-[10px] text-neutral-400 uppercase tracking-wider">Move to</p>
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  iconRight={<ChevronDown className="w-3 h-3" />}
+                  onClick={() => setMoveDropdownOpen((v) => !v)}
+                  className="w-full text-xs"
+                >
+                  {currentColumn?.label ?? card.column_name}
+                </Button>
+                {moveDropdownOpen && (
+                  <div className="absolute z-10 mt-1 left-0 right-0 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1">
+                    {COLUMNS.filter((c) => c.key !== card.column_name).map((col) => (
+                      <button
+                        key={col.key}
+                        type="button"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        onClick={() => {
+                          onMove?.(card.id, col.key as Column, Date.now());
+                          setMoveDropdownOpen(false);
+                          onClose();
+                        }}
+                      >
+                        <ArrowRight className="w-3 h-3 text-neutral-400" />
+                        {col.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* === Details Tab === */}
-        {activeTab === "details" && (
+        {activeTab === "subtasks" && (
         <div className="space-y-5">
 
         {/* Subtasks */}
@@ -427,40 +467,6 @@ export function CardDetailDialog({ card, spaceId, onClose, onUpdate, onMove, onD
               className="flex-1 text-sm border border-neutral-200 rounded-[var(--radius-sm)] px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 placeholder:text-neutral-300"
             />
             <Button variant="ghost" size="sm" icon={<Plus className="w-3 h-3" />} onClick={addSubtask}>Add</Button>
-          </div>
-        </div>
-
-        {/* Move to column */}
-        <div>
-          <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-2">Move to</p>
-          <div className="relative inline-block">
-            <Button
-              variant="secondary"
-              size="sm"
-              iconRight={<ChevronDown className="w-3 h-3" />}
-              onClick={() => setMoveDropdownOpen((v) => !v)}
-            >
-              {currentColumn?.label ?? card.column_name}
-            </Button>
-            {moveDropdownOpen && (
-              <div className="absolute z-10 mt-1 left-0 bg-white border border-neutral-200 rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1 min-w-[160px]">
-                {COLUMNS.filter((c) => c.key !== card.column_name).map((col) => (
-                  <button
-                    key={col.key}
-                    type="button"
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                    onClick={() => {
-                      onMove?.(card.id, col.key as Column, Date.now());
-                      setMoveDropdownOpen(false);
-                      onClose();
-                    }}
-                  >
-                    <ArrowRight className="w-3 h-3 text-neutral-400" />
-                    {col.label}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
