@@ -84,9 +84,21 @@ func (s *Service) Update(ctx context.Context, tenantID, id, actorID uuid.UUID, i
 	return space, nil
 }
 
-// Delete removes a space.
+// Delete removes a space. Organization spaces cannot be deleted.
+// Cascades dependent data (cards, goals, links) before removing the space.
 func (s *Service) Delete(ctx context.Context, tenantID, id uuid.UUID) error {
-	return s.repo.Delete(ctx, tenantID, id)
+	space, err := s.repo.GetByID(ctx, tenantID, id)
+	if err != nil {
+		return err
+	}
+	if space.SpaceType == "organization" {
+		return errors.Validation("cannot delete the organization space")
+	}
+
+	if err := s.repo.DeleteCascade(ctx, tenantID, id); err != nil {
+		return err
+	}
+	return nil
 }
 
 // ListRoots returns all root-level spaces for a tenant.

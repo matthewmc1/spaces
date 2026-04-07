@@ -102,13 +102,15 @@ export function SpaceTreeNode({
               <Plus size={11} />
               Add child space
             </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors"
-            >
-              <Trash2 size={11} />
-              Delete space
-            </button>
+            {space.space_type !== "organization" && (
+              <button
+                onClick={handleDelete}
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors"
+              >
+                <Trash2 size={11} />
+                Delete space
+              </button>
+            )}
           </div>
         )}
       </div>

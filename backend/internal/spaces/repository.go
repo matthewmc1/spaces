@@ -17,6 +17,7 @@ type Repository interface {
 	GetByID(ctx context.Context, tenantID, id uuid.UUID) (*Space, error)
 	Update(ctx context.Context, tenantID, id uuid.UUID, input UpdateInput) (*Space, error)
 	Delete(ctx context.Context, tenantID, id uuid.UUID) error
+	DeleteCascade(ctx context.Context, tenantID, id uuid.UUID) error
 	ListAll(ctx context.Context, tenantID uuid.UUID) ([]Space, error)
 	ListRoots(ctx context.Context, tenantID uuid.UUID) ([]Space, error)
 	ListChildren(ctx context.Context, tenantID, parentID uuid.UUID) ([]Space, error)
@@ -123,6 +124,25 @@ func (r *pgRepository) Delete(ctx context.Context, tenantID, id uuid.UUID) error
 	}
 	if result.RowsAffected() == 0 {
 		return domainerrors.NotFound("space", id.String())
+	}
+	return nil
+}
+
+func (r *pgRepository) DeleteCascade(ctx context.Context, tenantID, id uuid.UUID) error {
+	// Delete in dependency order to avoid FK violations
+	cascadeQueries := []string{
+		`DELETE FROM goal_links WHERE tenant_id = $1 AND source_type = 'card' AND source_id IN (SELECT id FROM cards WHERE space_id = $2)`,
+		`DELETE FROM card_links WHERE tenant_id = $1 AND card_id IN (SELECT id FROM cards WHERE space_id = $2)`,
+		`DELETE FROM cards WHERE tenant_id = $1 AND space_id = $2`,
+		`DELETE FROM goal_links WHERE tenant_id = $1 AND target_goal_id IN (SELECT id FROM goals WHERE space_id = $2)`,
+		`DELETE FROM goals WHERE tenant_id = $1 AND space_id = $2`,
+		`DELETE FROM programme_spaces WHERE tenant_id = $1 AND space_id = $2`,
+		`DELETE FROM spaces WHERE id = $2 AND tenant_id = $1`,
+	}
+	for _, q := range cascadeQueries {
+		if _, err := r.db.Exec(ctx, q, tenantID, id); err != nil {
+			return err
+		}
 	}
 	return nil
 }
