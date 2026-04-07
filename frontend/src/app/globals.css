@@ -42,15 +42,16 @@
   --radius-full: 9999px;
 
   /* Fonts */
-  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-display), ui-monospace, monospace;
   --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --font-serif: var(--font-serif), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-display), ui-monospace, monospace;
 }
 
 body {
   background: var(--color-neutral-50);
   color: var(--color-neutral-800);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 /* Noise texture overlay for depth */
