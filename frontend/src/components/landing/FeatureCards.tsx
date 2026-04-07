@@ -1,4 +1,4 @@
-import { Folder, SquareKanban, Target, BarChart3, GitBranch, Shield } from "lucide-react";
+import { Building2, SquareKanban, Target, BarChart3, Briefcase, Shield } from "lucide-react";
 import { type ReactNode } from "react";
 
 function FeatureCard({
@@ -34,64 +34,63 @@ export function FeatureCards() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-xs font-medium text-primary-600 uppercase tracking-[0.08em] mb-3">
-            Built for strategic teams
+            The engineering operating system
           </p>
           <h2 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
-            Everything you need to align and deliver
+            Portfolio visibility meets team autonomy
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard
-            icon={<Folder className="w-5 h-5" />}
-            title="Flexible Hierarchies"
-            description="Nest spaces within spaces to mirror your org structure. Programs, teams, workstreams — organized your way."
+            icon={<Building2 className="w-5 h-5" />}
+            title="Org → Team → Workstream"
+            description="Nested spaces mirror your org structure. Departments, teams, and workstreams — each with their own board, all rolling up to a single portfolio view."
             delay="0.1s"
           />
           <FeatureCard
             icon={<SquareKanban className="w-5 h-5" />}
-            title="Kanban Flow"
-            description="Triage, plan, execute, and deliver with a flow designed for strategic work. From inbox to done, with clarity at every stage."
+            title="WIP-Limited Kanban"
+            description="Configurable WIP limits per column enforce discipline. Visual warnings when columns are over capacity. The bottleneck is always visible."
             delay="0.2s"
           />
           <FeatureCard
             icon={<Target className="w-5 h-5" />}
-            title="Goal Alignment"
-            description="Link work to goals at any level. See at a glance whether day-to-day effort drives strategic outcomes."
+            title="Alignment Chains"
+            description="Link cards to goals, goals to org objectives. Trace any piece of work upward to the strategy it supports. See alignment gaps instantly."
             delay="0.3s"
           />
           <FeatureCard
             icon={<BarChart3 className="w-5 h-5" />}
-            title="Flow Metrics"
-            description="Cycle time, throughput, and capacity data at your fingertips. Spot bottlenecks before they become blockers."
+            title="Flow Distribution"
+            description="Classify work as Feature, Defect, Risk, or Debt. See where capacity actually flows and compare against targets. Say no with data."
             delay="0.4s"
           />
           <FeatureCard
-            icon={<GitBranch className="w-5 h-5" />}
-            title="Integrations"
-            description="Connect to GitHub, GitLab, and CI/CD pipelines. See build status and PRs directly on your cards."
+            icon={<Briefcase className="w-5 h-5" />}
+            title="Cross-Cutting Programmes"
+            description="Initiatives that span multiple teams? Programmes group work from anywhere in the org tree with aggregated metrics and health scoring."
             delay="0.5s"
           />
           <FeatureCard
             icon={<Shield className="w-5 h-5" />}
             title="Enterprise Ready"
-            description="Multi-tenant isolation, role-based access, audit logging, and SSO. Built for organizations that take security seriously."
+            description="Multi-tenant isolation, RBAC, Clerk SSO, activity logging, real-time WebSocket updates. Built for organizations that take security seriously."
             delay="0.6s"
           />
         </div>
-        {/* How it works section */}
         <div className="max-w-4xl mx-auto mt-20 pt-16 border-t border-neutral-200/60">
           <div className="text-center mb-10">
             <p className="text-xs font-medium text-primary-600 uppercase tracking-[0.08em] mb-3">
-              How teams use Spaces
+              The operating cadence
             </p>
             <h2 className="text-3xl font-[family-name:var(--font-display)] text-neutral-800 tracking-[-0.02em]">
-              From chaos to clarity in three steps
+              From cognitive overload to calm clarity
             </h2>
           </div>
           <div className="space-y-8">
-            <Step number="01" title="Capture everything in your inbox" description="Every idea, request, and initiative starts in the inbox. No more lost Slack threads or forgotten email asks. Triage when you're ready — ice box what needs definition, freeze what needs validation." />
-            <Step number="02" title="Plan with alignment" description="Link work to strategic goals at any level. See at a glance whether your sprint is driving quarterly objectives or drifting toward busy work. Configurable columns adapt to your team's flow." />
-            <Step number="03" title="Deliver with visibility" description="Track cycle times, spot bottlenecks, and celebrate completions. Leadership sees the roll-up across all spaces. Teams see their own board. Everyone sees the same truth." />
+            <Step number="01" title="Make all work visible at the portfolio level" description="Every programme, team, and workstream appears on one board with uniform metadata — health status, alignment score, flow distribution. When someone wants to add something and the portfolio is full, the conversation becomes 'which existing item do we pause?'" />
+            <Step number="02" title="Protect strategic time with structural discipline" description="WIP limits operate at every level — column limits protect team flow, portfolio limits protect leadership attention. Capacity allocation targets show where effort should go versus where it actually goes." />
+            <Step number="03" title="Align work to outcomes, not opinions" description="The alignment chain traces any card through goals up to org-level objectives. Orphaned goals surface instantly. High-priority cards without goal links get flagged. Every prioritization decision has data behind it." />
           </div>
         </div>
       </div>
